@@ -1,5 +1,4 @@
 <!-- main/templates/main/home.html -->
-
 {% extends "base.html" %} {% block title %}Helios - Home{% endblock %} {% block head %}
 <style>
     /* General Styling */
@@ -10,11 +9,11 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         padding: 0;
-        height: 100vh;
+        min-height: 100vh;
     }
     
     .container-fluid {
-        padding: 0;
+        padding: 20px;
         height: 100%;
     }
     
@@ -32,13 +31,14 @@
         display: flex;
         flex-direction: column;
         color: #f0f0f0;
+        padding: 20px;
         height: 100%;
     }
     
     .chat-header h4 {
         font-size: 1.5rem;
         font-weight: bold;
-        margin-bottom: 0;
+        margin-bottom: 10px;
     }
     
     .chat-box {
@@ -47,10 +47,11 @@
         padding: 15px;
         background-color: #3a3b4e;
         flex-grow: 1;
+        margin-bottom: 15px;
     }
     
     .chat-message {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     
     .chat-message.user {
@@ -94,7 +95,6 @@
         display: flex;
         gap: 10px;
         align-items: center;
-        margin-top: auto;
         padding: 10px;
         background-color: #3a3b4e;
         border-radius: 10px;
@@ -130,10 +130,6 @@
     .input-section button:hover {
         background-color: #40e082;
     }
-    
-    .input-section button:active {
-        background-color: #bad7f5;
-    }
     /* Workspace Section (Right) */
     
     .workspace-section {
@@ -144,6 +140,7 @@
         display: flex;
         flex-direction: column;
         color: #ffffff;
+        padding: 20px;
         height: 100%;
         position: relative;
     }
@@ -155,6 +152,7 @@
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        margin-bottom: 15px;
     }
     
     .browser-header {
@@ -216,7 +214,6 @@
         overflow: hidden;
         display: none;
         margin-top: 15px;
-        /* Space above the progress bar */
     }
     
     .progress-bar {
@@ -225,57 +222,15 @@
         width: 0%;
         transition: width 0.3s ease;
     }
-    /* Chat Input Form */
+    /* Prompt Information Display */
     
-    #chat-form {
-        background-color: #3a3b4e;
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        margin-top: auto;
-        /* Aligns form at the bottom */
-    }
-    
-    #chat-form input[type="text"] {
-        border: 2px solid #6272a4;
-        border-radius: 8px;
+    .prompt-info {
+        margin-top: 10px;
         padding: 10px;
         background-color: #2a2b3d;
-        color: #ffffff;
-        font-size: 1rem;
-        outline: none;
-        transition: border-color 0.3s ease;
-    }
-    
-    #chat-form input[type="text"]:focus {
-        border-color: #bad7f5;
-    }
-    
-    #chat-form button {
-        padding: 10px 20px;
-        border: none;
         border-radius: 8px;
-        background-color: #bad7f5;
-        color: #1e1e2e;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-    
-    #chat-form button:hover {
-        background-color: #40e082;
-    }
-    
-    #chat-form button:active {
-        transform: scale(0.95);
-        background-color: #37d372;
-    }
-    
-    #chat-form input::placeholder {
-        color: #8be9fd;
-        opacity: 0.8;
-        font-style: italic;
+        color: #bad7f5;
+        display: none;
     }
     /* Responsive Design */
     
@@ -286,44 +241,99 @@
         .chat-section,
         .workspace-section {
             margin-bottom: 20px;
+            height: auto;
+        }
+        .chat-header h4 {
+            font-size: 1.3rem;
+        }
+        .browser-title {
+            font-size: 0.9rem;
+        }
+        .input-section input[type="text"],
+        #user-input {
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+        .input-section button,
+        #chat-form button {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+        .message-header {
+            font-size: 0.8rem;
+        }
+        .message-content {
+            font-size: 0.9rem;
+            max-width: 90%;
+        }
+        .browser-content iframe {
+            height: 200px;
         }
     }
-    /* Add styles for prompt notifications */
+    /* Smaller Devices */
     
-    .prompt-info {
-        margin-top: 10px;
-        padding: 10px;
-        background-color: #2a2b3d;
-        border-radius: 8px;
-        color: #bad7f5;
+    @media (max-width: 575.98px) {
+        .container-fluid {
+            padding: 10px;
+        }
+        .chat-section,
+        .workspace-section {
+            padding: 15px;
+        }
+        .chat-header h4 {
+            font-size: 1.2rem;
+        }
+        .browser-title {
+            font-size: 0.8rem;
+        }
+        .input-section input[type="text"],
+        #user-input {
+            font-size: 0.8rem;
+            padding: 6px;
+        }
+        .input-section button,
+        #chat-form button {
+            font-size: 0.8rem;
+            padding: 6px 10px;
+        }
+        .message-header {
+            font-size: 0.7rem;
+        }
+        .message-content {
+            font-size: 0.8rem;
+            max-width: 95%;
+        }
+        .browser-content iframe {
+            height: 150px;
+        }
     }
 </style>
 {% endblock %} {% block content %}
 <div class="row h-100">
     <!-- Left Panel: Chat Section -->
-    <div class="col-md-6 chat-section p-4">
+    <div class="col-md-6 chat-section">
         <div class="chat-header mb-3">
             <h4>Helios Chat</h4>
         </div>
-        <div id="chat-box" class="chat-box flex-grow-1 mb-3">
+        <div id="chat-box" class="chat-box">
             <!-- Chat messages will appear here -->
         </div>
         <!-- Chat Input Form -->
         {% if user.is_authenticated %}
-        <form id="chat-form" class="input-section d-flex align-items-center">
-            <input type="text" id="user-input" class="form-control flex-grow-1 me-2" placeholder="Give Helios a task to work on..." required>
+        <form id="chat-form" class="input-section">
+            <input type="text" id="user-input" class="form-control me-2" placeholder="Give Helios a task to work on..." required>
             <button type="submit" class="btn btn-primary">Send</button>
         </form>
         <!-- Prompt Information Display -->
-        <div id="prompt-info" class="prompt-info" style="display: none;">
+        <div id="prompt-info" class="prompt-info">
             <!-- Remaining prompts info will be injected here -->
         </div>
         {% else %}
-        <div class="container mt-5">
-            <h1 class="text-center text-white">Welcome to Helios!</h1>
-            <p class="text-center text-white">Please log in to access the chat feature.</p>
-            <div class="text-center">
-                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+        <div class="text-center mt-5">
+            <h1 class="text-white">Welcome to Helios!</h1>
+            <p class="text-white">Please log in to access the chat feature.</p>
+            <div>
+                <a href="{% url 'login' %}" class="btn btn-primary me-2">Login</a>
                 <a href="{% url 'signup' %}" class="btn btn-secondary">Sign Up</a>
             </div>
         </div>
@@ -331,8 +341,8 @@
     </div>
 
     <!-- Right Panel: Workspace Section -->
-    <div class="col-md-6 workspace-section p-4">
-        <div class="browser-simulation flex-grow-1 d-flex flex-column mb-3">
+    <div class="col-md-6 workspace-section">
+        <div class="browser-simulation">
             <div class="browser-header d-flex align-items-center mb-3">
                 <div class="circle-buttons">
                     <span class="circle red"></span>
@@ -341,8 +351,8 @@
                 </div>
                 <span class="browser-title ms-2">https://your-workspace-url.com</span>
             </div>
-            <div class="browser-content flex-grow-1">
-                <iframe id="website-preview" srcdoc="<h1>Welcome to Your Workspace</h1>" class="w-100 h-100 rounded" sandbox="allow-scripts allow-same-origin"></iframe>
+            <div class="browser-content">
+                <iframe id="website-preview" srcdoc="<h1>Welcome to Your Workspace</h1>" sandbox="allow-scripts allow-same-origin"></iframe>
             </div>
         </div>
         <!-- Progress Bar -->
@@ -357,7 +367,7 @@
         const chatBox = document.getElementById('chat-box');
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
-        const sendButton = chatForm.querySelector('button[type="submit"]');
+        const sendButton = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
         const websitePreview = document.getElementById('website-preview');
         const progressContainer = document.getElementById('progress-container');
         const progressBar = document.getElementById('progress-bar');
@@ -366,19 +376,21 @@
         let isProcessing = false;
         let progressInterval = null;
 
-        // Prevent default form submission
-        chatForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent form submission
-            const message = userInput.value.trim();
-            if (!message) return;
-            appendMessage('user', message);
-            userInput.value = '';
-            sendMessage(message);
-        });
+        if (chatForm) {
+            // Prevent default form submission
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent form submission
+                const message = userInput.value.trim();
+                if (!message) return;
+                appendMessage('user', message);
+                userInput.value = '';
+                sendMessage(message);
+            });
+        }
 
         function appendMessage(sender, message, timestamp = getCurrentTime()) {
             const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message', sender, 'mb-4');
+            messageElement.classList.add('chat-message', sender, 'mb-3');
             messageElement.style.textAlign = sender === 'user' ? 'right' : 'left';
 
             const header = document.createElement('div');
@@ -499,8 +511,8 @@
         }
 
         function toggleInputs(enable) {
-            userInput.disabled = !enable;
-            sendButton.disabled = !enable;
+            if (userInput) userInput.disabled = !enable;
+            if (sendButton) sendButton.disabled = !enable;
         }
 
         function getCookie(name) {
@@ -519,7 +531,9 @@
         }
 
         // Initial welcome message
-        appendMessage('bot', 'Welcome! How can I assist you today?');
+        if (chatBox) {
+            appendMessage('bot', 'Welcome! How can I assist you today?');
+        }
     });
 </script>
 {% endblock %}
