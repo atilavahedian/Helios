@@ -19,3 +19,4 @@ debug.log
 # IDE directories
 .vscode/
 .idea/
+.DS_Store
