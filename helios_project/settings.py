@@ -83,9 +83,13 @@ WSGI_APPLICATION = "helios_project.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('helios_ab46', 'helios_ab46'),
+        'USER': os.getenv('helios_ab46_user', 'helios_ab46_user'),
+        'PASSWORD': os.getenv('CHABQmRQJlsQhFCoRYqfgP7qY1C5Xe3M', 'CHABQmRQJlsQhFCoRYqfgP7qY1C5Xe3M'),
+        'HOST': os.getenv('DB_HOST', 'dpg-ctn4f5btq21c73fdm0mg-a'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
