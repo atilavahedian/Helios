@@ -27,7 +27,11 @@ SECRET_KEY = "django-insecure-hl$%-dsp#jz#$ja_t8zc!-k!i3y!l(amz6=!a4%!!d%v2!uw30
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'helios-rxq0.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
