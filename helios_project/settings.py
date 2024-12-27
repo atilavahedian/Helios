@@ -138,7 +138,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/account/login/'
 
-MAX_PROMPTS_PER_DAY = 3
+# MAX_PROMPTS_PER_DAY = 3
 
 LOGGING = {
     'version': 1,
