@@ -83,16 +83,11 @@ WSGI_APPLICATION = "helios_project.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'helios_ab46', 
-        'USER': 'helios_ab46_user',  
-        'PASSWORD': 'CHABQmRQJlsQhFCoRYqfgP7qY1C5Xe3M',  
-        'HOST': 'dpg-ctn4f5btq21c73fdm0mg-a',  
-        'PORT': '5432',  
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 
 # Password validation
