@@ -58,8 +58,6 @@ MIDDLEWARE = [
 	'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 ROOT_URLCONF = "helios_project.urls"
 
