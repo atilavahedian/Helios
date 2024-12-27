@@ -1,0 +1,221 @@
+/* static/css/styles.css */
+
+
+/* General Styling */
+
+body {
+    background: linear-gradient(135deg, #1f1f2e, #282a36);
+    color: #f8f8f2;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+
+.container-fluid {
+    padding: 0;
+    height: 100%;
+}
+
+
+/* Chat Section */
+
+.chat-section {
+    background-color: #2a2b3d;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    height: 100%;
+    color: #ffffff;
+}
+
+.chat-header h4 {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.chat-box {
+    overflow-y: auto;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #3a3b4e;
+    height: 100%;
+}
+
+
+/* Chat Messages */
+
+.chat-message {
+    margin-bottom: 20px;
+}
+
+.chat-message.user {
+    text-align: right;
+}
+
+.chat-message.bot {
+    text-align: left;
+}
+
+.message-header {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.timestamp {
+    float: right;
+}
+
+.message-content {
+    margin-top: 5px;
+    background-color: #44475a;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+.chat-message.user .message-content {
+    background-color: #50fa7b;
+    color: #1e1e2e;
+}
+
+.chat-message.bot .message-content {
+    background-color: #282a36;
+    color: #50fa7b;
+}
+
+
+/* Action Button */
+
+.action-button button {
+    width: 100%;
+    background-color: #50fa7b;
+    color: #1e1e2e;
+    padding: 10px 15px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.action-button button:hover {
+    background-color: #40e082;
+}
+
+
+/* Workspace Section */
+
+.workspace-section {
+    background-color: #2a2b3d;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    height: 100%;
+    color: #ffffff;
+}
+
+.browser-simulation {
+    background-color: #3a3b4e;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.browser-header {
+    background-color: #282a36;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.circle-buttons .circle {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    border-radius: 50%;
+}
+
+.circle.red {
+    background-color: #ff5f56;
+}
+
+.circle.yellow {
+    background-color: #ffbd2e;
+}
+
+.circle.green {
+    background-color: #27c93f;
+}
+
+.browser-title {
+    color: #8be9fd;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.browser-content {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.browser-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 5px;
+}
+
+.progress {
+    height: 5px;
+    background-color: #44475a;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    width: 50%;
+    background-color: #50fa7b;
+    border-radius: 10px;
+}
+
+
+/* Responsive Design */
+
+@media (max-width: 767.98px) {
+    .row {
+        flex-direction: column;
+    }
+    .chat-section,
+    .workspace-section {
+        margin-bottom: 20px;
+    }
+}
+
+
+/* Scrollbar Styling for Chat Box */
+
+.chat-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-box::-webkit-scrollbar-track {
+    background: #3a3b4e;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background-color: #6272a4;
+    border-radius: 4px;
+}
+
+
+/* Input Placeholder Styling */
+
+input::placeholder {
+    color: #8be9fd;
+}

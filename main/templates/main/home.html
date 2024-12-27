@@ -1,0 +1,525 @@
+<!-- main/templates/main/home.html -->
+
+{% extends "base.html" %} {% block title %}Helios - Home{% endblock %} {% block head %}
+<style>
+    /* General Styling */
+    
+    body {
+        background: linear-gradient(135deg, #1f1f2e, #282a36);
+        color: #f8f8f2;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+    }
+    
+    .container-fluid {
+        padding: 0;
+        height: 100%;
+    }
+    
+    .row {
+        height: 100%;
+        margin: 0;
+    }
+    /* Chat Section (Left) */
+    
+    .chat-section {
+        background-color: #2a2b3d;
+        border-radius: 15px;
+        border: 1px solid #3a3b4e;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        color: #f0f0f0;
+        height: 100%;
+    }
+    
+    .chat-header h4 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .chat-box {
+        overflow-y: auto;
+        border-radius: 10px;
+        padding: 15px;
+        background-color: #3a3b4e;
+        flex-grow: 1;
+    }
+    
+    .chat-message {
+        margin-bottom: 20px;
+    }
+    
+    .chat-message.user {
+        text-align: right;
+    }
+    
+    .chat-message.bot {
+        text-align: left;
+    }
+    
+    .message-header {
+        color: #aaa;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .message-content {
+        margin-top: 5px;
+        background-color: #44475a;
+        padding: 10px 15px;
+        border-radius: 8px;
+        color: #ffffff;
+        display: inline-block;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    
+    .chat-message.user .message-content {
+        background-color: #bad7f5;
+        color: #1e1e2e;
+    }
+    
+    .chat-message.bot .message-content {
+        background-color: #282a36;
+        color: #bad7f5;
+    }
+    /* Action Button and Input Section */
+    
+    .input-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: auto;
+        padding: 10px;
+        background-color: #3a3b4e;
+        border-radius: 10px;
+    }
+    
+    .input-section input[type="text"] {
+        flex-grow: 1;
+        border: 2px solid #6272a4;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #2a2b3d;
+        color: #ffffff;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+    
+    .input-section input[type="text"]:focus {
+        border-color: #bad7f5;
+    }
+    
+    .input-section button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        background-color: #bad7f5;
+        color: #1e1e2e;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    .input-section button:hover {
+        background-color: #40e082;
+    }
+    
+    .input-section button:active {
+        background-color: #bad7f5;
+    }
+    /* Workspace Section (Right) */
+    
+    .workspace-section {
+        background-color: #2a2b3d;
+        border-radius: 15px;
+        border: 1px solid #3a3b4e;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        color: #ffffff;
+        height: 100%;
+        position: relative;
+    }
+    
+    .browser-simulation {
+        background-color: #3a3b4e;
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    
+    .browser-header {
+        background-color: #282a36;
+        padding: 10px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .circle-buttons .circle {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+        border-radius: 50%;
+    }
+    
+    .circle.red {
+        background-color: #ff5f56;
+    }
+    
+    .circle.yellow {
+        background-color: #ffbd2e;
+    }
+    
+    .circle.green {
+        background-color: #27c93f;
+    }
+    
+    .browser-title {
+        color: #8be9fd;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    
+    .browser-content {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 10px;
+        flex-grow: 1;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .browser-content iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 5px;
+    }
+    /* Progress Bar */
+    
+    .progress-container {
+        background-color: #44475a;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        display: none;
+        margin-top: 15px;
+        /* Space above the progress bar */
+    }
+    
+    .progress-bar {
+        background-color: #bad7f5;
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    /* Chat Input Form */
+    
+    #chat-form {
+        background-color: #3a3b4e;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        margin-top: auto;
+        /* Aligns form at the bottom */
+    }
+    
+    #chat-form input[type="text"] {
+        border: 2px solid #6272a4;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #2a2b3d;
+        color: #ffffff;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+    
+    #chat-form input[type="text"]:focus {
+        border-color: #bad7f5;
+    }
+    
+    #chat-form button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background-color: #bad7f5;
+        color: #1e1e2e;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    
+    #chat-form button:hover {
+        background-color: #40e082;
+    }
+    
+    #chat-form button:active {
+        transform: scale(0.95);
+        background-color: #37d372;
+    }
+    
+    #chat-form input::placeholder {
+        color: #8be9fd;
+        opacity: 0.8;
+        font-style: italic;
+    }
+    /* Responsive Design */
+    
+    @media (max-width: 767.98px) {
+        .row {
+            flex-direction: column;
+        }
+        .chat-section,
+        .workspace-section {
+            margin-bottom: 20px;
+        }
+    }
+    /* Add styles for prompt notifications */
+    
+    .prompt-info {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #2a2b3d;
+        border-radius: 8px;
+        color: #bad7f5;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="row h-100">
+    <!-- Left Panel: Chat Section -->
+    <div class="col-md-6 chat-section p-4">
+        <div class="chat-header mb-3">
+            <h4>Helios Chat</h4>
+        </div>
+        <div id="chat-box" class="chat-box flex-grow-1 mb-3">
+            <!-- Chat messages will appear here -->
+        </div>
+        <!-- Chat Input Form -->
+        {% if user.is_authenticated %}
+        <form id="chat-form" class="input-section d-flex align-items-center">
+            <input type="text" id="user-input" class="form-control flex-grow-1 me-2" placeholder="Give Helios a task to work on..." required>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+        <!-- Prompt Information Display -->
+        <div id="prompt-info" class="prompt-info" style="display: none;">
+            <!-- Remaining prompts info will be injected here -->
+        </div>
+        {% else %}
+        <div class="container mt-5">
+            <h1 class="text-center text-white">Welcome to Helios!</h1>
+            <p class="text-center text-white">Please log in to access the chat feature.</p>
+            <div class="text-center">
+                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-secondary">Sign Up</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Panel: Workspace Section -->
+    <div class="col-md-6 workspace-section p-4">
+        <div class="browser-simulation flex-grow-1 d-flex flex-column mb-3">
+            <div class="browser-header d-flex align-items-center mb-3">
+                <div class="circle-buttons">
+                    <span class="circle red"></span>
+                    <span class="circle yellow"></span>
+                    <span class="circle green"></span>
+                </div>
+                <span class="browser-title ms-2">https://your-workspace-url.com</span>
+            </div>
+            <div class="browser-content flex-grow-1">
+                <iframe id="website-preview" srcdoc="<h1>Welcome to Your Workspace</h1>" class="w-100 h-100 rounded" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const sendButton = chatForm.querySelector('button[type="submit"]');
+        const websitePreview = document.getElementById('website-preview');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const promptInfo = document.getElementById('prompt-info');
+
+        let isProcessing = false;
+        let progressInterval = null;
+
+        // Prevent default form submission
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent form submission
+            const message = userInput.value.trim();
+            if (!message) return;
+            appendMessage('user', message);
+            userInput.value = '';
+            sendMessage(message);
+        });
+
+        function appendMessage(sender, message, timestamp = getCurrentTime()) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender, 'mb-4');
+            messageElement.style.textAlign = sender === 'user' ? 'right' : 'left';
+
+            const header = document.createElement('div');
+            header.classList.add('message-header');
+            header.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Helios'}</strong> <span class="timestamp">${timestamp}</span>`;
+
+            const content = document.createElement('div');
+            content.classList.add('message-content');
+            content.innerHTML = message;
+
+            messageElement.appendChild(header);
+            messageElement.appendChild(content);
+            chatBox.appendChild(messageElement);
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutesStr} ${ampm}`;
+        }
+
+        async function sendMessage(message) {
+            if (isProcessing) return;
+            isProcessing = true;
+            toggleInputs(false);
+
+            // Show progress bar in the Workspace Section
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            progressInterval = setInterval(() => {
+                let currentWidth = parseInt(progressBar.style.width) || 0;
+                if (currentWidth < 90) {
+                    let increment = Math.floor(Math.random() * 10);
+                    progressBar.style.width = `${currentWidth + increment}%`;
+                }
+            }, 500);
+
+            try {
+                const response = await fetch('/chat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    progressBar.style.width = '100%';
+                    clearInterval(progressInterval);
+
+                    appendMessage('bot', data.reply + ` (Prompts remaining: ${data.remaining_prompts})`);
+                    websitePreview.srcdoc = data.website_html || "<h1>Welcome to Your Workspace</h1>";
+
+                    // Display remaining prompts
+                    if (data.remaining_prompts !== "Unlimited") {
+                        promptInfo.innerHTML = `You have <strong>${data.remaining_prompts}</strong> prompts remaining today.`;
+                        promptInfo.style.display = 'block';
+                    } else {
+                        promptInfo.innerHTML = `You have <strong>Unlimited</strong> prompts.`;
+                        promptInfo.style.display = 'block';
+                    }
+
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        toggleInputs(true);
+                        isProcessing = false;
+                    }, 500);
+                } else {
+                    progressBar.style.width = '100%';
+                    clearInterval(progressInterval);
+
+                    if (data.error) {
+                        appendMessage('bot', data.error);
+                        if (data.remaining_prompts !== undefined) {
+                            appendMessage('bot', `Prompts remaining: ${data.remaining_prompts}`);
+                        }
+                        // Optionally hide the prompt info
+                        promptInfo.style.display = 'none';
+                    } else {
+                        appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+                        promptInfo.style.display = 'none';
+                    }
+
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        toggleInputs(true);
+                        isProcessing = false;
+                    }, 500);
+                }
+            } catch (error) {
+                appendMessage('bot', 'Sorry, I couldn\'t process your request.');
+                console.error('Error:', error);
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                promptInfo.style.display = 'none';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    toggleInputs(true);
+                    isProcessing = false;
+                }, 500);
+            }
+        }
+
+        function toggleInputs(enable) {
+            userInput.disabled = !enable;
+            sendButton.disabled = !enable;
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Initial welcome message
+        appendMessage('bot', 'Welcome! How can I assist you today?');
+    });
+</script>
+{% endblock %}
