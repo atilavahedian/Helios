@@ -12,8 +12,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from logging import config
 import os
 from pathlib import Path
+import dj_database_url
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,9 +87,16 @@ WSGI_APPLICATION = "helios_project.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('helios_ab46'),
+        'USER': config('helios_ab46_user'),
+        'PASSWORD': config('CHABQmRQJlsQhFCoRYqfgP7qY1C5Xe3M'),
+        'HOST': config('dpg-ctn4f5btq21c73fdm0mg-a.oregon-postgres.render.com'),
+        'PORT': config('DB_PORT', default='5432'),
+        'OPTIONS': {
+            'sslmode': config('SSLMODE', default='require'),
+        },
     }
 }
 
