@@ -342,7 +342,7 @@
                 <span class="browser-title ms-2">https://your-workspace-url.com</span>
             </div>
             <div class="browser-content flex-grow-1">
-                <iframe id="website-preview" srcdoc="<h1>Welcome to Your Workspace</h1>" class="w-100 h-100 rounded" sandbox="allow-scripts allow-same-origin"></iframe>
+                <iframe id="website-preview" srcdoc="{{ website_html|safe }}" class="w-100 h-100 rounded" sandbox="allow-scripts allow-same-origin"></iframe>
             </div>
         </div>
         <!-- Progress Bar -->

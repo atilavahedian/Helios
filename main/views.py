@@ -2,27 +2,25 @@
 
 import json
 import openai
+import logging
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt  # Use with caution
+from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
 from .models import UserPrompt
 from account.models import UserProfile
 
-# **Security Reminder:**  
-# Never hardcode API keys in production. Use environment variables or secure storage.
-# Replace "YOUR_NEW_API_KEY" with your actual new API key.
+logger = logging.getLogger(__name__)
+
+# **Note:** It's recommended to move the API key to environment variables.
 openai.api_key = "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"
 
-# Define the maximum number of prompts per user per day in settings.py
-# Ensure you add MAX_PROMPTS_PER_DAY = 100 (or desired value) in settings.py
-
 @require_POST
-@csrf_exempt  # **Use with caution.** Prefer proper CSRF handling.
-@login_required  # Ensure only authenticated users can access
+@csrf_protect
+@login_required
 def chat(request):
     """
     Handles POST requests:
@@ -52,6 +50,7 @@ def chat(request):
                     "remaining_prompts": 0
                 }, status=403)
 
+        # Initialize session data if not present
         chat_log = request.session.get("chat_log", [])
         website_html = request.session.get("website_html", "")
 
@@ -60,15 +59,15 @@ def chat(request):
 
         # Construct system prompt for generating HTML
         system_prompt = (
-            "You are a helpful AI that generates HTML/CSS/JS for a website, use bootstrap and create most powerful and greate design website.\n\n"
+            "You are a helpful AI that generates HTML/CSS/JS for a website, using Bootstrap to create a powerful and great design.\n\n"
             f"User's request: {user_message}\n\n"
             "Please ONLY return the complete HTML code. No explanations."
         )
 
-        # Call OpenAI's ChatCompletion endpoint with the gpt-4o-mini model
+        # Call OpenAI's ChatCompletion endpoint with the correct model
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",
+                model="gpt-4o-mini",  
                 messages=[
                     {"role": "system", "content": "You are a website-building assistant."},
                     {"role": "user", "content": system_prompt},
@@ -78,7 +77,12 @@ def chat(request):
             # Extract the AI's generated text
             ai_html = response["choices"][0]["message"]["content"]
         except Exception as e:
+            logger.error(f"OpenAI API error: {str(e)}", exc_info=True)
             ai_html = f"<!-- Error calling OpenAI API: {str(e)} -->"
+            return JsonResponse({
+                "error": "Failed to generate website content.",
+                "details": str(e)
+            }, status=500)
 
         # Add the assistant's reply to the chat log
         chat_log.append({"role": "assistant", "content": ai_html})
@@ -106,9 +110,10 @@ def chat(request):
             "remaining_prompts": remaining_prompts
         })
     except json.JSONDecodeError:
+        logger.error("Invalid JSON received in chat view.", exc_info=True)
         return JsonResponse({"error": "Invalid JSON."}, status=400)
     except Exception as e:
-        # Log the exception as needed
+        logger.error(f"Unexpected error in chat view: {str(e)}", exc_info=True)
         return JsonResponse({"error": "An unexpected error occurred."}, status=500)
 
 def home(request):
@@ -125,6 +130,7 @@ def home(request):
         "chat_log": request.session["chat_log"],
         "website_html": request.session["website_html"],
     })
+
 
 # Home view for all users
 def home_view(request):
