@@ -3,7 +3,7 @@ venv/
 env/
 ENV/
 .venv/
-.env/
+.env
 
 # Static files
 staticfiles/
@@ -106,3 +106,4 @@ celerybeat-schedule
 
 # mypy
 .mypy_cache/
+.env
