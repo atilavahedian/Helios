@@ -108,3 +108,4 @@ celerybeat-schedule
 .mypy_cache/
 .env
 .env
+.env
