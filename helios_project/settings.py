@@ -89,16 +89,18 @@ WSGI_APPLICATION = "helios_project.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('helios_ab46'),
-        'USER': config('helios_ab46_user'),
-        'PASSWORD': config('CHABQmRQJlsQhFCoRYqfgP7qY1C5Xe3M'),
-        'HOST': config('dpg-ctn4f5btq21c73fdm0mg-a.oregon-postgres.render.com'),
+        'NAME': config('DB_NAME'),             
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT', default='5432'),
         'OPTIONS': {
             'sslmode': config('SSLMODE', default='require'),
         },
     }
 }
+
+
 
 
 # Password validation
