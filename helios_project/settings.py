@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-hl$%-dsp#jz#$ja_t8zc!-k!i3y!l(amz6=!a4%!!d%v2!uw30"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Set to False in production
+DEBUG = True  # Set to False in production
 
 ALLOWED_HOSTS = [
     'helios-rxq0.onrender.com',
