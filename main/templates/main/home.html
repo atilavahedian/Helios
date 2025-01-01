@@ -2,6 +2,7 @@
 
 {% extends "base.html" %} {% block title %}Helios - Home{% endblock %} {% block head %}
 <style>
+    /* Existing Styles */
     /* Global Box-Sizing */
     
     *,
@@ -54,7 +55,6 @@
         font-size: 1.5rem;
         font-weight: bold;
         margin-bottom: 10px;
-        color: #f8f8f2 !important;
     }
     
     .chat-box {
@@ -64,6 +64,7 @@
         border-radius: 10px;
         padding: 15px;
         margin-bottom: 20px;
+        position: relative;
     }
     
     .chat-message {
@@ -104,6 +105,34 @@
     .chat-message.bot .message-content {
         background-color: #282a36;
         color: #bad7f5;
+    }
+    /* Example Prompts Styling */
+    
+    .example-prompts {
+        margin: 20px auto;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .btn-example {
+        padding: 8px 12px;
+        background-color: #6272a4;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .btn-example:hover {
+        background-color: #7082b1;
+    }
+    
+    .btn-example:active {
+        background-color: #5a6b99;
     }
     /* Input Section */
     
@@ -259,40 +288,103 @@
         border-radius: 8px;
         color: #bad7f5;
     }
+    /* Structured Response Card */
+    
+    .structured-response {
+        background-color: #282a36;
+        border: 1px solid #44475a;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .structured-response .title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .structured-response .status {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .structured-response .status-text {
+        margin-left: 10px;
+        color: #8be9fd;
+        font-weight: bold;
+    }
+    
+    .structured-response .details {
+        color: #f8f8f2;
+        margin-bottom: 15px;
+    }
+    
+    .structured-response pre {
+        background-color: #44475a;
+        color: #f8f8f2;
+        padding: 10px;
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+    
+    .structured-response .footer {
+        text-align: right;
+        color: #50fa7b;
+        font-weight: bold;
+    }
     /* Responsive Design */
     
     @media (max-width: 767.98px) {
-        /* Ensure the row doesn't force full screen height on mobile */
         .row.h-100 {
             flex-direction: column;
-            height: auto;
-            flex: 1;
-            /* Let content + footer determine overall height */
         }
         .chat-section,
         .workspace-section {
             width: 100%;
             height: auto;
-            margin-bottom: 10px;
+            /* Let content determine height */
         }
         .chat-section {
             order: 0;
-            flex: none;
             /* Chat on top */
+            margin-bottom: 10px;
         }
         .workspace-section {
             order: 1;
+            /* Workspace below */
+            margin-top: 0;
             flex: 1.2;
-            /* Workspace below chat */
+            /* Make workspace slightly larger */
         }
-        /* Limit chatbox height so it becomes scrollable instead of huge */
-        .chat-box {
-            max-height: 40vh;
-            overflow-y: auto;
-        }
+        /* Ensure iframe content does not cause overflow */
         .browser-content iframe {
             max-width: 100%;
             max-height: 100%;
+        }
+        /* Add scroller to chat-box on mobile */
+        .chat-box {
+            max-height: 60vh;
+            /* Adjust as needed */
+        }
+        /* Adjust structured response card on mobile */
+        .structured-response {
+            padding: 15px;
+        }
+        .structured-response .title {
+            font-size: 1.2rem;
+        }
+        .structured-response .details {
+            font-size: 0.9rem;
+        }
+        .structured-response pre {
+            font-size: 0.8rem;
+        }
+        .structured-response .footer {
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -303,9 +395,11 @@
         <div class="chat-header mb-3">
             <h4>Helios Chat</h4>
         </div>
+
         <div id="chat-box" class="chat-box">
             <!-- Chat messages will appear here -->
         </div>
+
         {% if user.is_authenticated %}
         <form id="chat-form" class="input-section d-flex align-items-center">
             <input type="text" id="user-input" class="form-control me-2" placeholder="Give Helios a task..." required>
@@ -362,6 +456,40 @@
 
         let isProcessing = false;
         let progressInterval = null;
+        let examplePromptsDisplayed = false;
+
+        // Example Prompts Data
+        const examplePrompts = [{
+            category: "Portfolio Website",
+            prompt: "Create a complete portfolio website for a graphic designer, including Home, About, Portfolio, and Contact pages."
+        }, {
+            category: "E-commerce Site",
+            prompt: "Generate a full e-commerce website with product listings, shopping cart, and checkout functionality."
+        }, {
+            category: "Personal Blog",
+            prompt: "Design a personal blog website with a homepage, blog posts, and a contact page."
+        }, {
+            category: "Restaurant Website",
+            prompt: "Build a full-stack website for a restaurant, including menu, reservation system, and location details."
+        }, {
+            category: "Mobile App Landing",
+            prompt: "Develop a complete landing page for a new mobile app, featuring features, pricing, and download links."
+        }, {
+            category: "Photography Studio",
+            prompt: "Create a full website for a photography studio, including galleries, client testimonials, and booking forms."
+        }, {
+            category: "Corporate Consulting",
+            prompt: "Design a corporate website for a consulting firm, with services, team members, and contact information."
+        }, {
+            category: "Educational Platform",
+            prompt: "Generate a full educational platform with course listings, student portal, and resource library."
+        }, {
+            category: "Fitness Center",
+            prompt: "Build a comprehensive website for a fitness center, including class schedules, trainer profiles, and membership sign-up."
+        }, {
+            category: "Non-Profit Organization",
+            prompt: "Develop a full-featured website for a non-profit organization, including mission, projects, and donation options."
+        }];
 
         // Handle form submission
         if (chatForm) {
@@ -371,6 +499,7 @@
                 if (!message) return;
                 appendMessage('user', message);
                 userInput.value = '';
+                removeExamplePrompts();
                 sendMessage(message);
             });
         }
@@ -388,7 +517,16 @@
 
             const contentDiv = document.createElement('div');
             contentDiv.classList.add('message-content');
-            contentDiv.innerHTML = message;
+
+            // Check if the message is a structured response
+            if (sender === 'bot' && typeof message === 'object' && message.title) {
+                // Create structured response
+                const structuredDiv = createStructuredResponse(message);
+                contentDiv.appendChild(structuredDiv);
+            } else {
+                // Regular message
+                contentDiv.innerHTML = message;
+            }
 
             msgDiv.appendChild(headerDiv);
             msgDiv.appendChild(contentDiv);
@@ -396,6 +534,117 @@
 
             // Auto-scroll to bottom
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            // If it's the welcome message, display example prompts
+            if (sender === 'bot' && !examplePromptsDisplayed) {
+                displayExamplePrompts();
+                examplePromptsDisplayed = true;
+            }
+        }
+
+        // Create Structured Response Card
+        function createStructuredResponse(data) {
+            const cardDiv = document.createElement('div');
+            cardDiv.classList.add('structured-response');
+
+            // Header Section
+            const header = document.createElement('div');
+            header.classList.add('title');
+            header.innerText = data.title;
+            cardDiv.appendChild(header);
+
+            // Status Indicator
+            const statusDiv = document.createElement('div');
+            statusDiv.classList.add('status');
+
+            if (data.status === 'in_progress') {
+                // Progress Bar
+                const progress = document.createElement('div');
+                progress.classList.add('progress');
+                progress.style.width = '100%';
+
+                const progressBar = document.createElement('div');
+                progressBar.classList.add('progress-bar', 'progress-bar-striped', 'progress-bar-animated');
+                progressBar.setAttribute('role', 'progressbar');
+                progressBar.setAttribute('aria-valuenow', '100');
+                progressBar.setAttribute('aria-valuemin', '0');
+                progressBar.setAttribute('aria-valuemax', '100');
+                progressBar.style.width = '100%';
+                progressBar.innerText = 'Analysis in progress...';
+
+                progress.appendChild(progressBar);
+                statusDiv.appendChild(progress);
+            } else {
+                // Static Status Text
+                const statusText = document.createElement('span');
+                statusText.classList.add('status-text');
+                statusText.innerText = data.status_text || 'Solution provided successfully';
+                statusDiv.appendChild(statusText);
+            }
+
+            cardDiv.appendChild(statusDiv);
+
+            // Details Section
+            if (data.details) {
+                const detailsDiv = document.createElement('div');
+                detailsDiv.classList.add('details');
+                detailsDiv.innerText = data.details;
+                cardDiv.appendChild(detailsDiv);
+            }
+
+            // Code Snippet
+            if (data.code_snippet) {
+                const codePre = document.createElement('pre');
+                codePre.innerText = data.code_snippet;
+                cardDiv.appendChild(codePre);
+            }
+
+            // Footer Section
+            if (data.footer) {
+                const footerDiv = document.createElement('div');
+                footerDiv.classList.add('footer');
+                footerDiv.innerText = data.footer;
+                cardDiv.appendChild(footerDiv);
+            }
+
+            return cardDiv;
+        }
+
+        // Display Example Prompts
+        function displayExamplePrompts() {
+            const promptsDiv = document.createElement('div');
+            promptsDiv.classList.add('example-prompts');
+            promptsDiv.id = 'example-prompts';
+
+            examplePrompts.forEach((item, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('btn-example');
+                btn.innerText = item.category;
+                btn.dataset.prompt = item.prompt;
+                btn.dataset.index = index;
+                promptsDiv.appendChild(btn);
+            });
+
+            chatBox.appendChild(promptsDiv);
+
+            // Add event listeners to example prompt buttons
+            const exampleButtons = document.querySelectorAll('.btn-example');
+            exampleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const promptText = button.dataset.prompt;
+                    appendMessage('user', promptText);
+                    sendMessage(promptText);
+                    removeExamplePrompts();
+                });
+            });
+        }
+
+        // Remove Example Prompts
+        function removeExamplePrompts() {
+            const promptsDiv = document.getElementById('example-prompts');
+            if (promptsDiv) {
+                promptsDiv.remove();
+            }
         }
 
         // Get current time in HH:MM AM/PM
@@ -437,17 +686,20 @@
                 progressBar.style.width = '100%';
 
                 if (response.ok) {
-                    // Append bot message
-                    const botMessage = `${data.reply} (Prompts remaining: ${data.remaining_prompts})`;
-                    appendMessage('bot', botMessage);
-
-                    // Update workspace iframe
-                    websitePreview.srcdoc = data.website_html || `
-                    <h2 style="text-align:center; margin-top:40px;">
-                        Welcome to Helios!<br/>
-                        <em>Let's build something amazing!</em>
-                    </h2>
-                `;
+                    if (data.type === 'structured') {
+                        // Structured Response
+                        appendMessage('bot', data.content);
+                    } else {
+                        // Regular Text Response
+                        appendMessage('bot', data.reply);
+                        // Update workspace iframe
+                        websitePreview.srcdoc = data.website_html || `
+                        <h2 style="text-align:center; margin-top:40px;">
+                            Welcome to Helios!<br/>
+                            <em>Let's build something amazing!</em>
+                        </h2>
+                    `;
+                    }
 
                     // Display prompt info
                     if (data.remaining_prompts !== "Unlimited") {
@@ -473,15 +725,6 @@
                         appendMessage('bot', `Prompts remaining: ${data.remaining_prompts}`);
                     }
                     promptInfo.style.display = 'none';
-
-                    // Auto-scroll to workspace on mobile
-                    if (window.innerWidth <= 767.98) {
-                        setTimeout(() => {
-                            workspacePanel.scrollIntoView({
-                                behavior: 'smooth'
-                            });
-                        }, 300);
-                    }
                 }
             } catch (error) {
                 console.error('Error:', error);
