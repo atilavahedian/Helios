@@ -10,12 +10,18 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> {% block head %}{% endblock %}
     <style>
-        /* Global Styling */
+        /* Body & Navbar */
         
         body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            /* So footer can be placed at bottom */
             background: linear-gradient(135deg, #1f1f2e, #282a36);
             color: #f8f8f2;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
         }
         
         .navbar {
@@ -27,32 +33,23 @@
             font-weight: bold;
             display: flex;
             align-items: center;
-            /* Add left margin using Bootstrap's spacing utility */
             margin-left: 15px;
-            /* Adjust this value as needed */
         }
-        /* Custom Badge for Beta Tag */
         
         .badge-beta {
             background-color: #1a2b4e;
-            /* Updated color */
             color: #ffffff;
             font-size: 0.85rem;
             padding: 0.5em 0.6em;
             border-radius: 0.25rem;
             margin-left: 0.5rem;
-            /* Remove any transition effects */
             transition: none;
         }
-        /* Ensure no hover effects on the Beta badge */
         
         .badge-beta:hover {
             background-color: #1a2b4e;
-            /* Maintain the same color on hover */
             color: #ffffff;
-            /* Maintain the same text color on hover */
             cursor: default;
-            /* Indicate that it's not interactive */
         }
         
         .navbar-nav .nav-link {
@@ -84,17 +81,33 @@
             transform: scale(0.95);
             background-color: #37d372;
         }
+        /* Main Container for Content */
+        
+        .content-wrapper {
+            flex: 1;
+            /* Allows the main content to grow and fill available space */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Footer */
         
         footer {
             background-color: #1f1f2e;
             color: #f8f8f2;
             padding: 1rem;
+            flex-shrink: 0;
+            /* Prevents the footer from shrinking */
+            height: 60px;
+            /* Set a fixed height for the footer */
+        }
+        
+        footer p {
+            margin: 0;
         }
     </style>
 </head>
 
 <body>
-
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1f1f2e;">
         <div class="container-fluid">
@@ -107,7 +120,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                    <!-- Show Log Out button if user is logged in -->
                     <li class="nav-item">
                         <form method="POST" action="{% url 'logout' %}">
                             {% csrf_token %}
@@ -115,7 +127,6 @@
                         </form>
                     </li>
                     {% else %}
-                    <!-- Show Login and Get Started buttons if user is not logged in -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     </li>
@@ -127,14 +138,15 @@
             </div>
         </div>
     </nav>
-    <!-- Main Content -->
-    <div class="container-fluid py-4">
+
+    <!-- Main Content Wrapper -->
+    <div class="content-wrapper container-fluid py-4">
         {% block content %}{% endblock %}
     </div>
 
     <!-- Footer -->
     <footer class="text-center">
-        <p class="m-0">Helios © 2025. All rights reserved.</p>
+        <p>Helios © 2025. All rights reserved.</p>
     </footer>
 
     <!-- Bootstrap JS Bundle with Popper -->

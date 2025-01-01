@@ -54,6 +54,7 @@
         font-size: 1.5rem;
         font-weight: bold;
         margin-bottom: 10px;
+        color: #f8f8f2 !important;
     }
     
     .chat-box {
@@ -261,28 +262,34 @@
     /* Responsive Design */
     
     @media (max-width: 767.98px) {
+        /* Ensure the row doesn't force full screen height on mobile */
         .row.h-100 {
             flex-direction: column;
+            height: auto;
+            flex: 1;
+            /* Let content + footer determine overall height */
         }
         .chat-section,
         .workspace-section {
             width: 100%;
             height: auto;
-            /* Let content determine height */
+            margin-bottom: 10px;
         }
         .chat-section {
             order: 0;
+            flex: none;
             /* Chat on top */
-            margin-bottom: 10px;
         }
         .workspace-section {
             order: 1;
-            /* Workspace below */
-            margin-top: 0;
             flex: 1.2;
-            /* Make workspace slightly larger */
+            /* Workspace below chat */
         }
-        /* Ensure iframe content does not cause overflow */
+        /* Limit chatbox height so it becomes scrollable instead of huge */
+        .chat-box {
+            max-height: 40vh;
+            overflow-y: auto;
+        }
         .browser-content iframe {
             max-width: 100%;
             max-height: 100%;
