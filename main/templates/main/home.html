@@ -2,7 +2,6 @@
 
 {% extends "base.html" %} {% block title %}Helios - Home{% endblock %} {% block head %}
 <style>
-    /* Existing Styles */
     /* Global Box-Sizing */
     
     *,
@@ -18,11 +17,13 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         padding: 0;
-        height: 100vh;
         overflow-x: hidden;
-        /* Prevent horizontal scrolling */
     }
-    /* Full Height Container */
+    
+    html,
+    body {
+        height: 100%;
+    }
     
     .container-fluid {
         height: 100%;
@@ -49,12 +50,14 @@
         padding: 20px;
         width: 50%;
         height: 100%;
+        overflow: hidden;
     }
     
     .chat-header h4 {
         font-size: 1.5rem;
         font-weight: bold;
         margin-bottom: 10px;
+        color: white !important;
     }
     
     .chat-box {
@@ -106,7 +109,6 @@
         background-color: #282a36;
         color: #bad7f5;
     }
-    /* Example Prompts Styling */
     
     .example-prompts {
         margin: 20px auto;
@@ -198,6 +200,7 @@
         width: 50%;
         height: 100%;
         position: relative;
+        overflow: hidden;
     }
     
     .browser-simulation {
@@ -250,7 +253,6 @@
         border-radius: 8px;
         flex-grow: 1;
         overflow: hidden;
-        /* Prevent iframe overflow */
         position: relative;
         height: 100%;
         padding: 10px;
@@ -271,6 +273,8 @@
         overflow: hidden;
         display: none;
         margin-top: 15px;
+        z-index: 10;
+        position: relative;
     }
     
     .progress-bar {
@@ -341,12 +345,12 @@
     @media (max-width: 767.98px) {
         .row.h-100 {
             flex-direction: column;
+            height: auto;
         }
         .chat-section,
         .workspace-section {
             width: 100%;
             height: auto;
-            /* Let content determine height */
         }
         .chat-section {
             order: 0;
@@ -357,8 +361,10 @@
             order: 1;
             /* Workspace below */
             margin-top: 0;
-            flex: 1.2;
-            /* Make workspace slightly larger */
+            flex: 1;
+            /* Flex grow to occupy remaining space */
+            min-height: 40vh;
+            /* Increased to 40vh for better visibility */
         }
         /* Ensure iframe content does not cause overflow */
         .browser-content iframe {
@@ -368,7 +374,6 @@
         /* Add scroller to chat-box on mobile */
         .chat-box {
             max-height: 60vh;
-            /* Adjust as needed */
         }
         /* Adjust structured response card on mobile */
         .structured-response {
@@ -385,6 +390,21 @@
         }
         .structured-response .footer {
             font-size: 0.9rem;
+        }
+        .content-wrapper {
+            overflow-y: auto;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .row.h-100 {
+            flex-direction: row;
+            height: 100vh;
+        }
+        .chat-section,
+        .workspace-section {
+            height: 100%;
+            overflow-y: auto;
         }
     }
 </style>
@@ -562,16 +582,16 @@
                 progress.classList.add('progress');
                 progress.style.width = '100%';
 
-                const progressBar = document.createElement('div');
-                progressBar.classList.add('progress-bar', 'progress-bar-striped', 'progress-bar-animated');
-                progressBar.setAttribute('role', 'progressbar');
-                progressBar.setAttribute('aria-valuenow', '100');
-                progressBar.setAttribute('aria-valuemin', '0');
-                progressBar.setAttribute('aria-valuemax', '100');
-                progressBar.style.width = '100%';
-                progressBar.innerText = 'Analysis in progress...';
+                const progressBarElement = document.createElement('div');
+                progressBarElement.classList.add('progress-bar', 'progress-bar-striped', 'progress-bar-animated');
+                progressBarElement.setAttribute('role', 'progressbar');
+                progressBarElement.setAttribute('aria-valuenow', '100');
+                progressBarElement.setAttribute('aria-valuemin', '0');
+                progressBarElement.setAttribute('aria-valuemax', '100');
+                progressBarElement.style.width = '100%';
+                progressBarElement.innerText = 'Analysis in progress...';
 
-                progress.appendChild(progressBar);
+                progress.appendChild(progressBarElement);
                 statusDiv.appendChild(progress);
             } else {
                 // Static Status Text
@@ -693,11 +713,11 @@
                         appendMessage('bot', data.reply);
                         // Update workspace iframe
                         websitePreview.srcdoc = data.website_html || `
-                        <h2 style="text-align:center; margin-top:40px;">
-                            Welcome to Helios!<br/>
-                            <em>Let's build something amazing!</em>
-                        </h2>
-                    `;
+                            <h2 style="text-align:center; margin-top:40px;">
+                                Welcome to Helios!<br/>
+                                <em>Let's build something amazing!</em>
+                            </h2>
+                        `;
                     }
 
                     // Display prompt info
