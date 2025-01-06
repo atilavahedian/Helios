@@ -18,103 +18,98 @@ logger = logging.getLogger(__name__)
 # **Note:** It's recommended to move the API key to environment variables.
 openai.api_key = "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"
 
+
 @require_POST
 @csrf_protect
 @login_required
 def chat(request):
-    """
-    Handles POST requests:
-      - Receives JSON data with 'message'
-      - Sends it to OpenAI's GPT model
-      - Saves and returns updated chat log + generated HTML
-    """
+    data = json.loads(request.body)
+    user_message = data.get("message", "").strip()
+    if not user_message:
+        return JsonResponse({"error": "No message provided."}, status=400)
+
     try:
-        data = json.loads(request.body)
-        user_message = data.get("message", "").strip()
-        if not user_message:
-            return JsonResponse({"error": "No message provided."}, status=400)
+        is_exempt = request.user.profile.is_exempt_from_prompt_limit
+    except UserProfile.DoesNotExist:
+        is_exempt = False
 
-        # Check if user is exempt from prompt limits
-        try:
-            is_exempt = request.user.profile.is_exempt_from_prompt_limit
-        except UserProfile.DoesNotExist:
-            is_exempt = False  # Default to not exempt
+    if not is_exempt:
+        today = timezone.now().date()
+        user_prompt, _ = UserPrompt.objects.get_or_create(user=request.user, date=today)
+        if user_prompt.count >= settings.MAX_PROMPTS_PER_DAY:
+            return JsonResponse({"error": "Daily prompt limit reached. Please try again tomorrow.",
+                                 "remaining_prompts": 0}, status=403)
 
-        # If not exempt, enforce prompt limits
-        if not is_exempt:
-            today = timezone.now().date()
-            user_prompt, created = UserPrompt.objects.get_or_create(user=request.user, date=today)
-            if user_prompt.count >= settings.MAX_PROMPTS_PER_DAY:
-                return JsonResponse({
-                    "error": "Daily prompt limit reached. Please try again tomorrow.",
-                    "remaining_prompts": 0
-                }, status=403)
+    # Retrieve existing website HTML from session if available
+    current_html = request.session.get("website_html", "")
 
-        # Initialize session data if not present
-        chat_log = request.session.get("chat_log", [])
-        website_html = request.session.get("website_html", "")
+    # Build or Modify Decision
+    # We'll store a simple flag in the session, e.g. "has_website" to decide whether to modify or build new
+    has_website = bool(current_html.strip())
 
-        # Add user message to chat log
-        chat_log.append({"role": "user", "content": user_message})
+    chat_log = request.session.get("chat_log", [])
+    chat_log.append({"role": "user", "content": user_message})
 
-        # Construct system prompt for generating HTML
-        system_prompt = (
-            "You are a helpful AI that generates HTML/CSS/JS for a website, using Bootstrap to create a powerful and great design.\n\n"
-            f"User's request: {user_message}\n\n"
-            "Please ONLY return the complete HTML code. No explanations."
+    system_prompt = (
+        "You are Helios, an advanced website-building assistant. The user will provide instructions about building or "
+        "You are a helpful AI that generates HTML/CSS/JS for a website, using Bootstrap to create a powerful and great design.\n"
+        "modifying a website. You MUST return a JSON object with exactly two keys:\n\n"
+        "1) 'conversation': plain text only, no code.\n"
+        "2) 'website_code': the updated HTML/CSS/JS.\n\n"
+        "Important:\n"
+        "- If 'has_website' is True, you only modify the existing HTML/CSS/JS.\n"
+        "- If 'has_website' is False, you create a brand new website from scratch.\n"
+        "- Never include any code in 'conversation'."
+    )
+
+    # Provide the current HTML as context if we already have a website
+    if has_website:
+        messages_list = [
+            {"role": "system", "content": system_prompt},
+            {"role": "assistant", "content": f"Existing website code:\n{current_html}"},
+            {"role": "user", "content": user_message},
+        ]
+    else:
+        messages_list = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ]
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=messages_list,
+            temperature=0.7,
         )
-
-        # Call OpenAI's ChatCompletion endpoint with the correct model
+        raw_content = response["choices"][0]["message"]["content"]
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o-mini",  
-                messages=[
-                    {"role": "system", "content": "You are a website-building assistant."},
-                    {"role": "user", "content": system_prompt},
-                ],
-                temperature=0.7,
-            )
-            # Extract the AI's generated text
-            ai_html = response["choices"][0]["message"]["content"]
-        except Exception as e:
-            logger.error(f"OpenAI API error: {str(e)}", exc_info=True)
-            ai_html = f"<!-- Error calling OpenAI API: {str(e)} -->"
-            return JsonResponse({
-                "error": "Failed to generate website content.",
-                "details": str(e)
-            }, status=500)
-
-        # Add the assistant's reply to the chat log
-        chat_log.append({"role": "assistant", "content": ai_html})
-
-        # Update the entire website_html with the new HTML
-        website_html = ai_html
-
-        # If user is not exempt, increment the prompt count
-        if not is_exempt:
-            user_prompt.count += 1
-            user_prompt.save()
-            remaining_prompts = settings.MAX_PROMPTS_PER_DAY - user_prompt.count
-        else:
-            remaining_prompts = "Unlimited"
-
-        # Save back to session
-        request.session["chat_log"] = chat_log
-        request.session["website_html"] = website_html
-        request.session.modified = True
-
-        # Respond with the assistant's reply and website HTML
-        return JsonResponse({
-            "reply": ai_html,
-            "website_html": website_html,
-            "remaining_prompts": remaining_prompts
-        })
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON received in chat view.", exc_info=True)
-        return JsonResponse({"error": "Invalid JSON."}, status=400)
+            parsed = json.loads(raw_content)
+            ai_reply = parsed.get("conversation", "")
+            updated_html = parsed.get("website_code", "")
+        except:
+            ai_reply = "Helios: Sorry, I couldn't generate the correct format."
+            updated_html = current_html
     except Exception as e:
-        logger.error(f"Unexpected error in chat view: {str(e)}", exc_info=True)
-        return JsonResponse({"error": "An unexpected error occurred."}, status=500)
+        logger.error(f"OpenAI API error: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to generate website content."}, status=500)
+
+    chat_log.append({"role": "assistant", "content": ai_reply})
+    request.session["chat_log"] = chat_log
+    request.session["website_html"] = updated_html
+    request.session.modified = True
+
+    if not is_exempt:
+        user_prompt.count += 1
+        user_prompt.save()
+        remaining_prompts = settings.MAX_PROMPTS_PER_DAY - user_prompt.count
+    else:
+        remaining_prompts = "Unlimited"
+
+    return JsonResponse({
+        "reply": ai_reply,
+        "website_html": updated_html,
+        "remaining_prompts": remaining_prompts
+    })
 
 def home(request):
     """
