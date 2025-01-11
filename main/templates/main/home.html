@@ -344,6 +344,58 @@
         color: #50fa7b;
         font-weight: bold;
     }
+    /* ---------- New Task Card Overlay (Merged from "new code") ---------- */
+    
+    .task-card {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 310px;
+        border-radius: 10px;
+        background-color: #3c3d50;
+        color: #f8f8f2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        z-index: 2000;
+        display: none;
+        /* Hidden by default */
+    }
+    
+    .task-card h5 {
+        margin: 0 0 5px;
+        font-size: 1.05rem;
+        font-weight: bold;
+    }
+    
+    .task-card .task-subtitle {
+        font-size: 0.85rem;
+        color: #cfcfcf;
+        margin-bottom: 8px;
+        min-height: 20px;
+        /* Make space for rotating text */
+    }
+    
+    .task-card .task-progress-bar {
+        background-color: #999ab7;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    
+    .task-card .task-progress-bar .task-progress {
+        background-color: #ffffff;
+        /* White progress bar */
+        width: 0%;
+        height: 100%;
+        transition: width 0.2s linear;
+    }
+    
+    .task-card .task-time {
+        font-size: 0.85rem;
+        color: #9f9fbe;
+    }
     /* Responsive Design */
     
     @media (max-width: 767.98px) {
@@ -401,6 +453,14 @@
             transform: translateX(-50%);
             width: 80%;
             z-index: 1001;
+        }
+        /* Make the task card appear near the bottom center on mobile */
+        .task-card {
+            top: auto;
+            bottom: 15px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 85%;
         }
     }
     
@@ -469,6 +529,16 @@
         </div>
     </div>
 </div>
+
+<!-- Floating Task Card for Live Updates -->
+<div id="task-card" class="task-card">
+    <h5 id="task-title">Task Title</h5>
+    <div class="task-subtitle" id="task-subtitle">Please wait...</div>
+    <div class="task-progress-bar">
+        <div class="task-progress" id="task-progress"></div>
+    </div>
+    <div class="task-time" id="task-time">Time: 0s</div>
+</div>
 {% endblock %} {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -482,6 +552,25 @@
         const progressBar = document.getElementById('progress-bar');
         const promptInfo = document.getElementById('prompt-info');
 
+        /* ---------- Floating Task Card References (Merged from "new code") ---------- */
+        const taskCard = document.getElementById('task-card');
+        const taskTitle = document.getElementById('task-title');
+        const taskSubtitle = document.getElementById('task-subtitle');
+        const taskProgressBar = document.getElementById('task-progress');
+        const taskTime = document.getElementById('task-time');
+        const liveStatuses = [
+            'Generating layout...',
+            'Adding colors...',
+            'Embedding scripts...',
+            'Fine-tuning design...',
+            'Almost there...'
+        ];
+        let statusIndex = 0;
+        let taskTimer = null;
+        let secondsElapsed = 0;
+        let statusCycleInterval = null;
+
+        /* ---------- Original Variables ---------- */
         let isProcessing = false;
         let progressInterval = null;
         let examplePromptsDisplayed = false;
@@ -541,7 +630,7 @@
             const headerDiv = document.createElement('div');
             headerDiv.classList.add('message-header');
             headerDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Helios'}</strong>
-                               <span class="timestamp">${timestamp}</span>`;
+                                   <span class="timestamp">${timestamp}</span>`;
 
             const contentDiv = document.createElement('div');
             contentDiv.classList.add('message-content');
@@ -608,7 +697,6 @@
                 statusText.innerText = data.status_text || 'Solution provided successfully';
                 statusDiv.appendChild(statusText);
             }
-
             cardDiv.appendChild(statusDiv);
 
             // Details Section
@@ -681,7 +769,7 @@
             let minutes = now.getMinutes();
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
+            if (minutes < 10) minutes = '0' + minutes;
             return `${hours}:${minutes} ${ampm}`;
         }
 
@@ -690,6 +778,9 @@
             if (isProcessing) return;
             isProcessing = true;
             toggleInputs(false);
+
+            // Start the floating task card
+            startTaskTracking(message);
 
             // Show and animate progress bar
             showProgressBar();
@@ -708,9 +799,12 @@
 
                 const data = await response.json();
 
-                // Stop progress bar animation
+                // Stop main progress bar
                 clearInterval(progressInterval);
                 progressBar.style.width = '100%';
+
+                // Mark the floating card as completed
+                stopTaskTracking(true);
 
                 if (response.ok) {
                     if (data.type === 'structured') {
@@ -756,6 +850,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 appendMessage('bot', 'Sorry, I couldn\'t process your request.');
+                stopTaskTracking(false);
             } finally {
                 // Hide progress bar and re-enable inputs
                 setTimeout(() => {
@@ -766,7 +861,7 @@
             }
         }
 
-        // Show and animate the progress bar
+        // Show and animate the main progress bar
         function showProgressBar() {
             progressContainer.style.display = 'block';
             progressBar.style.width = '0%';
@@ -779,7 +874,7 @@
             }, 500);
         }
 
-        // Hide the progress bar
+        // Hide the main progress bar
         function hideProgressBar() {
             progressContainer.style.display = 'none';
             progressBar.style.width = '0%';
@@ -792,7 +887,7 @@
             sendButton.disabled = !enable;
         }
 
-        // Get CSRF token from cookies
+        // CSRF helper
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -806,6 +901,66 @@
                 }
             }
             return cookieValue;
+        }
+
+        /* ---- TASK CARD LOGIC (Merged from "new code") ---- */
+        statusCycleInterval = null;
+        taskTimer = null;
+        secondsElapsed = 0;
+
+        function startTaskTracking(promptText) {
+            // Show the floating card
+            taskCard.style.display = 'block';
+            // Title: shorten if too long
+            taskTitle.textContent = (promptText.length > 45) ?
+                (promptText.substring(0, 42) + '...') :
+                promptText;
+
+            taskSubtitle.textContent = 'Generating website...';
+            taskProgressBar.style.width = '0%';
+            taskTime.textContent = 'Time: 0s';
+            secondsElapsed = 0;
+            statusIndex = 0;
+
+            // Animate the white bar
+            let cardWidth = 0;
+            taskCard.dataset.cardInterval = setInterval(() => {
+                if (cardWidth < 98) {
+                    cardWidth += 2;
+                    taskProgressBar.style.width = cardWidth + '%';
+                }
+            }, 800);
+
+            // Time counter
+            taskTimer = setInterval(() => {
+                secondsElapsed++;
+                taskTime.textContent = `Time: ${secondsElapsed}s`;
+            }, 1000);
+
+            // Rotate the live status messages every 1.8s
+            statusCycleInterval = setInterval(() => {
+                statusIndex = (statusIndex + 1) % liveStatuses.length;
+                taskSubtitle.textContent = liveStatuses[statusIndex];
+            }, 1800);
+        }
+
+        function stopTaskTracking(success) {
+            // Clear intervals
+            clearInterval(taskTimer);
+            clearInterval(statusCycleInterval);
+            const cardInterval = taskCard.dataset.cardInterval;
+            if (cardInterval) clearInterval(cardInterval);
+
+            if (success) {
+                taskSubtitle.textContent = `Completed in ${secondsElapsed}s`;
+                taskProgressBar.style.width = '100%';
+            } else {
+                taskSubtitle.textContent = 'Error encountered.';
+            }
+            // Hide after 4s
+            setTimeout(() => {
+                taskCard.style.display = 'none';
+            }, 4000);
         }
 
         // Initial system greeting
