@@ -31,7 +31,7 @@ SECRET_KEY = "django-insecure-hl$%-dsp#jz#$ja_t8zc!-k!i3y!l(amz6=!a4%!!d%v2!uw30
 DEBUG = True  # Set to False in production
 
 ALLOWED_HOSTS = [
-    'helios-rxq0.onrender.com',
+    'helios-chat.com',
     'localhost',
     '127.0.0.1',
 ]
@@ -40,7 +40,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-	"account",
+    "account",
     "main",
     "django.contrib.admin",
     "django.contrib.auth",
