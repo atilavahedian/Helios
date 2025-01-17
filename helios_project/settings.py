@@ -67,7 +67,7 @@ ROOT_URLCONF = "helios_project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')],  # Ensure templates are correctly located
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -89,16 +89,14 @@ WSGI_APPLICATION = "helios_project.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),             
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', default='5432'),
-        'OPTIONS': {
-            'sslmode': config('SSLMODE', default='require'),
-        },
+        'NAME': 'helios-db',  
+        'USER': 'atila',  
+        'PASSWORD': 'GjXBuWh8G7oRAXtCgYpF',
+        'HOST': 'helios-db.crweemykwbxz.us-east-2.rds.amazonaws.com',  
+        'PORT': '5432',
     }
 }
+
 
 
 
