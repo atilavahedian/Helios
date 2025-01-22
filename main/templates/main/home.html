@@ -559,12 +559,20 @@
         const taskProgressBar = document.getElementById('task-progress');
         const taskTime = document.getElementById('task-time');
         const liveStatuses = [
-            'Generating layout...',
-            'Adding colors...',
-            'Embedding scripts...',
-            'Fine-tuning design...',
-            'Almost there...'
+            "Initializing design pipeline...",
+            "Parsing CSS frameworks...",
+            "Generating responsive grid layout...",
+            "Compiling dynamic components...",
+            "Integrating Bootstrap and custom styling...",
+            "Embedding CSS animations and transitions...",
+            "Optimizing JavaScript interactivity...",
+            "Validating HTML semantics...",
+            "Testing cross-browser compatibility...",
+            "Reviewing for best practices...",
+            "Finalizing design assets...",
+            "Almost done..."
         ];
+
         let statusIndex = 0;
         let taskTimer = null;
         let secondsElapsed = 0;
@@ -578,35 +586,36 @@
         // Example Prompts Data
         const examplePrompts = [{
             category: "Portfolio Website",
-            prompt: "Create a complete portfolio website for a graphic designer, including Home, About, Portfolio, and Contact pages."
+            prompt: "Develop a sophisticated, multi-section portfolio website for a graphic designer. Include an engaging Home page with a full-screen hero and subtle animations, an About page with an interactive timeline of career highlights, a dynamic Portfolio page with filterable project galleries, and a Contact page featuring an embedded form and Google Maps integration. Ensure the design is modern, minimal, and responsive."
         }, {
             category: "E-commerce Site",
-            prompt: "Generate a full e-commerce website with product listings, shopping cart, and checkout functionality."
+            prompt: "Generate a complete e-commerce website with a sleek, user-centered design. Create a homepage with high-resolution banner images, a product gallery with hover effects and quick views, a detailed product page with zoom-in functionality, a shopping cart with real-time price updates, and a secure, streamlined checkout process. Incorporate modern UI elements and responsive design principles for an optimal experience on all devices."
         }, {
             category: "Personal Blog",
-            prompt: "Design a personal blog website with a homepage, blog posts, and a contact page."
+            prompt: "Design an elegant and responsive personal blog website. The homepage should feature a clean layout with featured posts, while the blog section displays articles in an engaging grid layout. Include an About page that tells the author’s story with professional photography and a Contact page with integrated social media links. Emphasize readability, modern typography, and tasteful use of white space throughout the site."
         }, {
             category: "Restaurant Website",
-            prompt: "Build a full-stack website for a restaurant that showcases an elegant and modern design, featuring a detailed menu with images and descriptions of each dish, a user-friendly reservation system with date and time selection, and an interactive location map with directions. The website should include sections for customer testimonials, contact information, and an 'About Us' page to share the restaurant's story. Ensure the site is mobile-responsive and incorporates subtle animations to enhance user engagement."
+            prompt: "Build a high-end, full-stack restaurant website that captures both style and functionality. Design a homepage with a captivating hero image and a parallax scrolling effect, a Menu page displaying dishes with high-quality images and descriptions, and a Reservation page featuring an interactive date/time picker with real-time availability. Include additional pages such as Customer Testimonials, About Us, and a location/map page. The design should be mobile-responsive, incorporate subtle animations, and use a warm, inviting color palette."
         }, {
             category: "Mobile App Landing",
-            prompt: "Develop a complete landing page for a new mobile app, featuring features, pricing, and download links."
+            prompt: "Develop a dynamic landing page for a new mobile app. The site should feature a bold, eye-catching hero section with an app preview video or mockup, detailed sections highlighting key features, clear pricing tiers, and prominent download buttons for iOS and Android. Utilize modern design trends with clean typography, engaging micro-interactions, and a layout that guides the visitor through the value proposition of the app."
         }, {
             category: "Photography Studio",
-            prompt: "Create a full website for a photography studio, including galleries, client testimonials, and booking forms."
+            prompt: "Create a visually stunning website for a photography studio that highlights a rich portfolio. Include a homepage with a fullscreen slideshow, galleries organized by project or category with lightbox viewing, an About page that shares the studio’s creative philosophy, and a Booking page with a simple form and calendar integration. Emphasize minimalist design, high-quality imagery, and smooth transitions between sections."
         }, {
             category: "Corporate Consulting",
-            prompt: "Design a corporate website for a consulting firm, with services, team members, and contact information."
+            prompt: "Design a professional and sophisticated corporate website for a consulting firm. The homepage should include an impactful hero section, a Services page detailing offerings with iconography, a Team page with interactive profiles and bios, and a Contact page with a built-in inquiry form. Use a modern, clean design with consistent branding, subtle animation effects, and a layout that inspires trust and expertise."
         }, {
             category: "Educational Platform",
-            prompt: "Generate a full educational platform with course listings, student portal, and resource library."
+            prompt: "Generate a full-featured educational platform website that is both engaging and intuitive. Design a homepage that highlights featured courses and success stories, a Course Catalog with filter and search options, a Student Portal with login and progress tracking, and a Resource Library where supplementary materials are easy to navigate. Emphasize modern UI components, interactive elements, and a layout optimized for both desktop and mobile users."
         }, {
             category: "Fitness Center",
-            prompt: "Build a comprehensive website for a fitness center, including class schedules, trainer profiles, and membership sign-up."
+            prompt: "Build a comprehensive website for a fitness center that merges functionality with high-energy design. Create a homepage featuring class schedules and an inspiring hero section, a Trainers page with detailed profiles and video introductions, and a Membership page that outlines various plans with dynamic pricing tables. Integrate interactive elements such as a booking system for classes and a responsive design that ensures a seamless experience on all devices."
         }, {
             category: "Non-Profit Organization",
-            prompt: "Develop a full-featured website for a non-profit organization, including mission, projects, and donation options."
+            prompt: "Develop an impactful, full-featured website for a non-profit organization. Design a homepage that clearly communicates the mission with compelling visuals, a Projects page that showcases case studies with progress bars and impact metrics, a Donation page with secure payment integration and inspiring calls-to-action, and a Volunteer page featuring event calendars and sign-up forms. Utilize a design that balances emotion with professionalism, ensuring accessibility and responsiveness."
         }];
+
 
         // Handle form submission
         if (chatForm) {
