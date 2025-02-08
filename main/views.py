@@ -1,4 +1,5 @@
 import json
+import re
 import openai
 import logging
 from django.shortcuts import render
@@ -13,6 +14,7 @@ from account.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
+# Ensure the API key is set (using your pinned version of openai)
 openai.api_key = "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"
 
 @require_POST
@@ -20,7 +22,7 @@ openai.api_key = "sk-proj-ursU39QLqkf5nBwmFxOfp5xXHla1crZ99NpRBNtQ9yGS-OXD4jaRov
 @login_required
 def chat(request):
     """
-    Handles the AJAX POST request:
+    Handles the AJAX POST request from the frontend:
       1. Reads user message.
       2. Calls OpenAI to build or modify the website.
       3. Returns JSON with 'reply' and 'website_html'.
@@ -60,29 +62,19 @@ def chat(request):
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
 
+    # Updated system prompt for best website generation
     system_prompt = """
-    You are Helios, an advanced website-building assistant focusing on modern, visually appealing web design. 
-    The user will provide instructions about building or modifying a website.
+You are Helios, an advanced website-building assistant focused on crafting modern, visually appealing, and high-quality websites. 
+The user will provide instructions for building or modifying a website.
+You MUST return ONLY valid JSON, with no extra text or markdown, enclosed within triple backticks (```).
+The JSON must contain exactly two keys:
+  - "conversation": A plain text summary of the changes you made.
+  - "website_code": The complete, updated HTML/CSS/JS code for the website.
+Do not output anything else outside the triple backticks.
+Example output:
+{ "conversation": "Updated the homepage layout and added animations.", "website_code": "<!DOCTYPE html><html> ... </html>" }""".strip()
 
-    You MUST return valid JSON with exactly two keys:
-    1) "conversation": plain text only (no code blocks)
-    2) "website_code": the updated HTML/CSS/JS, preferably using too much Bootstrap  
-    and any modern styling/animations for a polished look.
-
-    Important:
-    - If 'has_website' is True, incorporate or refine the existing code in your new website_code.
-    - If 'has_website' is False, create a brand-new site from scratch with a well-structured layout and contemporary design.
-    - DO NOT include any code in the "conversation" field. All code must go in "website_code."
-
-    Example of the required output:
-
-    {
-    "conversation": "Here is a concise overview of the changes I made...",
-    "website_code": "<!DOCTYPE html><html> ... your updated or newly created site ... </html>"
-    }
-    """.strip()
-
-    # Decide how to feed the model
+    # Build messages list based on whether an existing website exists
     if has_website:
         messages_list = [
             {"role": "system", "content": system_prompt},
@@ -95,30 +87,35 @@ def chat(request):
             {"role": "user", "content": user_message},
         ]
 
+    # Call OpenAI and process the response
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",  # Using the specified model name
+            model="gpt-4o-mini",  # Using your specified model name
             messages=messages_list,
-            temperature=0.7,
+            temperature=0.5,      # Lower temperature for more deterministic output
         )
         raw_content = response["choices"][0]["message"]["content"]
         logger.debug(f"OpenAI raw response: {raw_content}")
-        try:
-            parsed = json.loads(raw_content)
-            ai_reply = parsed.get("conversation", "")
-            updated_html = parsed.get("website_code", "")
-            # If the response does not contain the expected keys, force an error
-            if not ai_reply or not updated_html:
-                raise ValueError("Missing expected keys in OpenAI response")
-        except Exception as parse_error:
-            logger.error("Error parsing OpenAI response: " + str(parse_error), exc_info=True)
-            ai_reply = "Helios: Sorry, I couldn't generate the correct format."
-            updated_html = current_html
-    except Exception as e:
-        logger.error("OpenAI API error: " + str(e), exc_info=True)
-        return JsonResponse({"error": "Failed to generate website content."}, status=500)
 
-    # Append AI response to chat log
+        # Extract JSON enclosed in triple backticks if present
+        json_match = re.search(r"```(.*?)```", raw_content, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1).strip()
+        else:
+            json_str = raw_content.strip()
+
+        parsed = json.loads(json_str)
+        ai_reply = parsed.get("conversation", "")
+        updated_html = parsed.get("website_code", "")
+        if not ai_reply or not updated_html:
+            raise ValueError("Missing expected keys in response")
+    except Exception as e:
+        logger.error("OpenAI API error or response parsing error: " + str(e), exc_info=True)
+        # Fallback messages
+        ai_reply = "Helios: Sorry, I couldn't generate the correct format."
+        updated_html = current_html
+
+    # Append AI response to chat log and update session
     chat_log.append({"role": "assistant", "content": ai_reply})
     request.session["chat_log"] = chat_log
     request.session["website_html"] = updated_html
