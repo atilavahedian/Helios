@@ -1,5 +1,3 @@
-# main/views.py
-
 import json
 import openai
 import logging
@@ -15,7 +13,6 @@ from account.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
-
 openai.api_key = "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"
 
 @require_POST
@@ -23,12 +20,18 @@ openai.api_key = "sk-proj-ursU39QLqkf5nBwmFxOfp5xXHla1crZ99NpRBNtQ9yGS-OXD4jaRov
 @login_required
 def chat(request):
     """
-    Handles the AJAX POST request from the frontend:
-      1. Reads user message
-      2. Calls OpenAI to build or modify the website
-      3. Returns JSON with 'reply' and 'website_html'
+    Handles the AJAX POST request:
+      1. Reads user message.
+      2. Calls OpenAI to build or modify the website.
+      3. Returns JSON with 'reply' and 'website_html'.
     """
-    data = json.loads(request.body)
+    # Parse request body safely
+    try:
+        data = json.loads(request.body)
+    except Exception as e:
+        logger.error("Failed to parse request body: " + str(e), exc_info=True)
+        return JsonResponse({"error": "Invalid request format."}, status=400)
+
     user_message = data.get("message", "").strip()
     if not user_message:
         return JsonResponse({"error": "No message provided."}, status=400)
@@ -51,12 +54,11 @@ def chat(request):
 
     # Retrieve existing website from session
     current_html = request.session.get("website_html", "")
-    has_website = bool(current_html.strip())  # True if we already have some website code
+    has_website = bool(current_html.strip())
 
     # Record the conversation in session
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
-
 
     system_prompt = """
     You are Helios, an advanced website-building assistant focusing on modern, visually appealing web design. 
@@ -80,15 +82,11 @@ def chat(request):
     }
     """.strip()
 
-
     # Decide how to feed the model
     if has_website:
         messages_list = [
             {"role": "system", "content": system_prompt},
-            {
-                "role": "assistant",
-                "content": f"Existing website code:\n{current_html}"
-            },
+            {"role": "assistant", "content": f"Existing website code:\n{current_html}"},
             {"role": "user", "content": user_message},
         ]
     else:
@@ -97,7 +95,6 @@ def chat(request):
             {"role": "user", "content": user_message},
         ]
 
-    # Call OpenAI
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",  # Using the specified model name
@@ -105,23 +102,23 @@ def chat(request):
             temperature=0.7,
         )
         raw_content = response["choices"][0]["message"]["content"]
-        logger.debug(f"OpenAI raw response: {raw_content}")  # Log the raw JSON/text for debugging
-
-        # Attempt to parse the model's JSON
+        logger.debug(f"OpenAI raw response: {raw_content}")
         try:
             parsed = json.loads(raw_content)
             ai_reply = parsed.get("conversation", "")
             updated_html = parsed.get("website_code", "")
-        except Exception:
-            # If the model didn't return valid JSON or missing keys
+            # If the response does not contain the expected keys, force an error
+            if not ai_reply or not updated_html:
+                raise ValueError("Missing expected keys in OpenAI response")
+        except Exception as parse_error:
+            logger.error("Error parsing OpenAI response: " + str(parse_error), exc_info=True)
             ai_reply = "Helios: Sorry, I couldn't generate the correct format."
             updated_html = current_html
-
     except Exception as e:
-        logger.error(f"OpenAI API error: {str(e)}", exc_info=True)
+        logger.error("OpenAI API error: " + str(e), exc_info=True)
         return JsonResponse({"error": "Failed to generate website content."}, status=500)
 
-    # Append AI response to chat
+    # Append AI response to chat log
     chat_log.append({"role": "assistant", "content": ai_reply})
     request.session["chat_log"] = chat_log
     request.session["website_html"] = updated_html
@@ -135,13 +132,11 @@ def chat(request):
     else:
         remaining_prompts = "Unlimited"
 
-    # Return final JSON
     return JsonResponse({
         "reply": ai_reply,
         "website_html": updated_html,
         "remaining_prompts": remaining_prompts
     })
-
 
 def home(request):
     """
@@ -158,13 +153,11 @@ def home(request):
         "website_html": request.session["website_html"],
     })
 
-
 def home_view(request):
     """
     Simple home view if needed.
     """
     return render(request, 'main/home.html')
-
 
 @login_required(login_url='/account/login/')
 def chat_view(request):
