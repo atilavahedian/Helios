@@ -158,7 +158,7 @@ LOGOUT_REDIRECT_URL = '/account/login/'
 # Prompt limit settings
 MAX_PROMPTS_PER_DAY = 3  # Set your desired limit
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
