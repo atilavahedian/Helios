@@ -22,12 +22,12 @@ openai.api_key = "sk-proj-ursU39QLqkf5nBwmFxOfp5xXHla1crZ99NpRBNtQ9yGS-OXD4jaRov
 @login_required
 def chat(request):
     """
-    Handles the AJAX POST request from the frontend:
-      1. Reads user message.
+    Handles the AJAX POST request:
+      1. Reads the user's message.
       2. Calls OpenAI to build or modify the website.
-      3. Returns JSON with 'reply' and 'website_html'.
+      3. Returns valid JSON with 'reply' and 'website_code'.
     """
-    # Parse request body safely
+    # Parse the request body safely.
     try:
         data = json.loads(request.body)
     except Exception as e:
@@ -38,13 +38,12 @@ def chat(request):
     if not user_message:
         return JsonResponse({"error": "No message provided."}, status=400)
 
-    # Check if user is exempt from daily prompt limits.
+    # Check if the user is exempt from daily prompt limits.
     try:
         is_exempt = request.user.profile.is_exempt_from_prompt_limit
     except UserProfile.DoesNotExist:
         is_exempt = False
 
-    # Enforce daily prompt limit if not exempt
     if not is_exempt:
         today = timezone.now().date()
         user_prompt, _ = UserPrompt.objects.get_or_create(user=request.user, date=today)
@@ -54,31 +53,31 @@ def chat(request):
                 "remaining_prompts": 0
             }, status=403)
 
-    # Retrieve existing website from session
+    # Retrieve the current website from session (if any)
     current_html = request.session.get("website_html", "")
     has_website = bool(current_html.strip())
 
-    # Record the conversation in session
+    # Record the conversation in the session.
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
 
-    # Enhanced system prompt for interactive modern website design using Bootstrap
+    # Improved system prompt for interactive modern website design using Bootstrap 5.
     system_prompt = """
-    You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites using the latest frameworks and design practices. Your task is to interact directly with the user to fully understand their website requirements by asking clarifying questions if needed, and then produce complete, production-ready website code.
+You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites using the latest frameworks and design practices. Your task is to interact directly with the user to fully understand their website requirements by asking clarifying questions if necessary, and then produce complete, production-ready website code.
 
-    When a user provides instructions, you MUST:
-    1. Ask any clarifying questions if any part of the request is ambiguous. In your response, include a "conversation" field that summarizes your understanding, any clarifications you requested, and your design decisions.
-    2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. Use modern frameworks like Bootstrap 5 to ensure the website is responsive and attractive, incorporating interactive elements (such as navigation bars, modals, carousels, and subtle animations) where appropriate.
-    3. Return ONLY valid JSON enclosed within triple backticks (```), with no extra text, commentary, or markdown. The JSON output MUST contain exactly two keys:
-    - "conversation": A plain text summary of your interactions, clarifications, and design decisions.
-    - "website_code": The full, updated website code.
+When a user provides instructions, you MUST:
+1. Ask clarifying questions if any part of the request is ambiguous. In your "conversation" field, include a concise summary of your clarifications and design decisions.
+2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. Use modern frameworks like Bootstrap 5 to ensure the design is responsive and attractive, incorporating interactive elements (e.g., navigation bars, modals, carousels, and subtle animations) where appropriate.
+3. Return ONLY valid JSON enclosed within triple backticks (```), with no extra text or markdown. The JSON MUST have exactly two keys:
+   - "conversation": A plain text summary of your clarifications and design decisions.
+   - "website_code": The full, updated website code.
 
-    Do not output anything outside the triple backticks.
+Do not output anything outside the triple backticks.
 
-    Example output:
-    { "conversation": "Based on the user's request for a modern portfolio website, I clarified that a responsive grid and interactive navbar were needed. I implemented a Bootstrap-based design with a navigation bar, responsive project grid, and subtle animations.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Portfolio Website</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>Portfolio</a></nav><div class='container mt-4'><div class='row'><div class='col-md-4'>Project 1</div><div class='col-md-4'>Project 2</div><div class='col-md-4'>Project 3</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>" }""".strip()
+Example output:
+{ "conversation": "Based on the user's request for a modern mobile app landing page, I clarified the need for a bold hero section with an app preview, detailed feature sections, clear pricing tiers, and download buttons for iOS and Android. I implemented a responsive design using Bootstrap 5 and added subtle animations.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Mobile App Landing</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>App Landing</a></nav><div class='container mt-4'><div class='row'><div class='col-md-6'>Feature Section 1</div><div class='col-md-6'>Feature Section 2</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>" }""".strip()
 
-    # Build messages list based on whether an existing website exists
+    # Build the messages list based on whether an existing website exists.
     if has_website:
         messages_list = [
             {"role": "system", "content": system_prompt},
@@ -91,17 +90,17 @@ def chat(request):
             {"role": "user", "content": user_message},
         ]
 
-    # Call OpenAI and process the response
+    # Call OpenAI and process the response.
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",  # Using your specified model name
+            model="gpt-4o-mini",
             messages=messages_list,
-            temperature=0.5,      # Lower temperature for more deterministic output
+            temperature=0.2,  # Lower temperature for more deterministic output.
         )
         raw_content = response["choices"][0]["message"]["content"]
         logger.debug(f"OpenAI raw response: {raw_content}")
 
-        # Extract JSON enclosed in triple backticks if present
+        # Extract JSON enclosed in triple backticks if present.
         json_match = re.search(r"```(.*?)```", raw_content, re.DOTALL)
         if json_match:
             json_str = json_match.group(1).strip()
@@ -115,17 +114,17 @@ def chat(request):
             raise ValueError("Missing expected keys in response")
     except Exception as e:
         logger.error("OpenAI API error or response parsing error: " + str(e), exc_info=True)
-        # Fallback messages if parsing fails
+        # Fallback: provide a formatted error message.
         ai_reply = "Helios: Sorry, I couldn't generate the correct format."
         updated_html = current_html
 
-    # Append AI response to chat log and update session
+    # Update session with chat log and website code.
     chat_log.append({"role": "assistant", "content": ai_reply})
     request.session["chat_log"] = chat_log
     request.session["website_html"] = updated_html
     request.session.modified = True
 
-    # Update prompt count if not exempt
+    # Update prompt count if not exempt.
     if not is_exempt:
         user_prompt.count += 1
         user_prompt.save()
@@ -140,29 +139,18 @@ def chat(request):
     })
 
 def home(request):
-    """
-    Renders the chat + website interface.
-    Initializes session data if not present.
-    """
     if "chat_log" not in request.session:
         request.session["chat_log"] = []
     if "website_html" not in request.session:
         request.session["website_html"] = "<h2>Welcome!</h2><p>Let's build your site!</p>"
-
     return render(request, "main/home.html", {
         "chat_log": request.session["chat_log"],
         "website_html": request.session["website_html"],
     })
 
 def home_view(request):
-    """
-    Simple home view if needed.
-    """
     return render(request, 'main/home.html')
 
 @login_required(login_url='/account/login/')
 def chat_view(request):
-    """
-    A dedicated chat view if desired.
-    """
     return render(request, 'main/chat.html')
