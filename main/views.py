@@ -14,7 +14,7 @@ from account.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
-# Ensure the API key is set (using your pinned version of openai)
+# Set your OpenAI API key (using your pinned version)
 openai.api_key = "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"
 
 @require_POST
@@ -62,23 +62,21 @@ def chat(request):
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
 
-    # Updated system prompt for best website generation
+    # Enhanced system prompt for interactive modern website design using Bootstrap
     system_prompt = """
-    You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites. You interact directly with the user about their website requirements. Your goal is to understand exactly what the user wants and produce complete, production-ready website code that meets those needs.
+    You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites using the latest frameworks and design practices. Your task is to interact directly with the user to fully understand their website requirements by asking clarifying questions if needed, and then produce complete, production-ready website code.
 
     When a user provides instructions, you MUST:
-
     1. Ask any clarifying questions if any part of the request is ambiguous. In your response, include a "conversation" field that summarizes your understanding, any clarifications you requested, and your design decisions.
-    2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. Ensure the code is modern and responsive by leveraging frameworks like Bootstrap 5 and incorporating interactive elements (such as navigation bars, modals, carousels, and subtle animations) where appropriate.
-    3. Return ONLY valid JSON, enclosed within triple backticks (```), with no extra text, commentary, or markdown. The JSON output MUST have exactly two keys:
+    2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. Use modern frameworks like Bootstrap 5 to ensure the website is responsive and attractive, incorporating interactive elements (such as navigation bars, modals, carousels, and subtle animations) where appropriate.
+    3. Return ONLY valid JSON enclosed within triple backticks (```), with no extra text, commentary, or markdown. The JSON output MUST contain exactly two keys:
     - "conversation": A plain text summary of your interactions, clarifications, and design decisions.
     - "website_code": The full, updated website code.
 
-    Do not output anything outside of the triple backticks.
+    Do not output anything outside the triple backticks.
 
     Example output:
-    { "conversation": "The user requested a modern portfolio website with an interactive navbar, a responsive grid for project display, and subtle animations. I clarified that a Bootstrap-based design was ideal, and implemented a responsive layout using Bootstrap 5 components.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Portfolio Website</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>Portfolio</a></nav><div class='container mt-4'><div class='row'><div class='col-md-4'>Project 1</div><div class='col-md-4'>Project 2</div><div class='col-md-4'>Project 3</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>"}""".strip()
-
+    { "conversation": "Based on the user's request for a modern portfolio website, I clarified that a responsive grid and interactive navbar were needed. I implemented a Bootstrap-based design with a navigation bar, responsive project grid, and subtle animations.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Portfolio Website</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>Portfolio</a></nav><div class='container mt-4'><div class='row'><div class='col-md-4'>Project 1</div><div class='col-md-4'>Project 2</div><div class='col-md-4'>Project 3</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>" }""".strip()
 
     # Build messages list based on whether an existing website exists
     if has_website:
@@ -117,7 +115,7 @@ def chat(request):
             raise ValueError("Missing expected keys in response")
     except Exception as e:
         logger.error("OpenAI API error or response parsing error: " + str(e), exc_info=True)
-        # Fallback messages
+        # Fallback messages if parsing fails
         ai_reply = "Helios: Sorry, I couldn't generate the correct format."
         updated_html = current_html
 
@@ -137,7 +135,7 @@ def chat(request):
 
     return JsonResponse({
         "reply": ai_reply,
-        "website_html": updated_html,
+        "website_code": updated_html,
         "remaining_prompts": remaining_prompts
     })
 
