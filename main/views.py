@@ -27,6 +27,7 @@ def chat(request):
       2. Calls OpenAI to build or modify the website.
       3. Returns valid JSON with 'reply' and 'website_code'.
     """
+    # Parse the request body
     try:
         data = json.loads(request.body)
     except Exception as e:
@@ -52,31 +53,31 @@ def chat(request):
                 "remaining_prompts": 0
             }, status=403)
 
-    # Retrieve any existing website code from session.
+    # Retrieve any existing website code from session (if any)
     current_html = request.session.get("website_html", "")
     has_website = bool(current_html.strip())
 
-    # Append the user's message to the chat log in session.
+    # Append the user's message to the chat log in session
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
 
     # Enhanced system prompt for interactive, modern website design using Bootstrap 5.
     system_prompt = """
-You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites using the latest frameworks and design practices. Your task is to interact directly with the user to fully understand their website requirements by asking clarifying questions if needed, and then produce complete, production-ready website code.
+    You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites using the latest frameworks and design practices. Your task is to interact directly with the user to fully understand their website requirements by asking clarifying questions if needed, and then produce complete, production-ready website code.
 
-When a user provides instructions, you MUST:
-1. Ask clarifying questions if any part of the request is ambiguous. In your "conversation" field, include a concise summary of your clarifications and design decisions.
-2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. Use modern frameworks like Bootstrap 5 to ensure responsiveness and attractive design, and incorporate interactive elements (e.g., navigation bars, modals, carousels, subtle animations) where appropriate.
-3. Return ONLY valid JSON enclosed within triple backticks (```). The JSON MUST have exactly two keys:
-   - "conversation": A plain text summary of your interactions and design decisions.
-   - "website_code": The full, updated website code.
+    When a user provides instructions, you MUST:
+    1. Ask clarifying questions if any part of the request is ambiguous. In your "conversation" field, include a concise summary of your clarifications and design decisions.
+    2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. you should Use modern frameworks like Bootstrap 5 to ensure the design is responsive and attractive, and incorporate interactive elements (e.g., navigation bars, modals, carousels, subtle animations) where appropriate.
+    3. Return ONLY valid JSON enclosed within triple backticks (```). The JSON MUST have exactly two keys:
+    - "conversation": A plain text summary of your clarifications and design decisions.
+    - "website_code": The full, updated website code.
 
-Do not output anything outside the triple backticks.
+    Do not output anything outside the triple backticks.
 
-Example output:
-{ "conversation": "Based on the user's request for a modern mobile app landing page, I clarified that a bold hero section with an app preview, detailed feature sections, clear pricing tiers, and download buttons for both iOS and Android were needed. I implemented a responsive design using Bootstrap 5 with interactive elements.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Mobile App Landing</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>App Landing</a></nav><div class='container mt-4'><div class='row'><div class='col-md-6'>Feature Section 1</div><div class='col-md-6'>Feature Section 2</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>" }""".strip()
+    Example output:
+    { "conversation": "Based on the user's request for a modern mobile app landing page, I clarified the need for a bold hero section with an app preview, detailed feature sections, clear pricing tiers, and download buttons for both iOS and Android. I implemented a responsive design using Bootstrap 5 with interactive elements.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Mobile App Landing</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>App Landing</a></nav><div class='container mt-4'><div class='row'><div class='col-md-6'>Feature Section 1</div><div class='col-md-6'>Feature Section 2</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>" }""".strip()
 
-    # Build the messages list.
+    # Build the messages list based on whether an existing website exists.
     if has_website:
         messages_list = [
             {"role": "system", "content": system_prompt},
@@ -89,17 +90,17 @@ Example output:
             {"role": "user", "content": user_message},
         ]
 
-    # Call the OpenAI API and process the response.
+    # Call OpenAI and process the response.
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=messages_list,
-            temperature=0.2,  # Lower temperature for more deterministic output.
+            temperature=0.2,  
         )
         raw_content = response["choices"][0]["message"]["content"]
         logger.debug(f"OpenAI raw response: {raw_content}")
 
-        # Extract JSON enclosed in triple backticks.
+        # Extract JSON enclosed in triple backticks if present.
         json_match = re.search(r"```(.*?)```", raw_content, re.DOTALL)
         if json_match:
             json_str = json_match.group(1).strip()
@@ -113,11 +114,13 @@ Example output:
             raise ValueError("Missing expected keys in response")
     except Exception as e:
         logger.error("OpenAI API error or response parsing error: " + str(e), exc_info=True)
-        # Fallback response if parsing fails.
-        ai_reply = "Helios: Sorry, I couldn't generate the correct format."
-        updated_html = current_html
+        # Return error response without falling back to old website code.
+        return JsonResponse({
+            "error": "Failed to generate a valid website code for the latest prompt.",
+            "details": str(e)
+        }, status=500)
 
-    # Update the chat log and website code in session.
+    # Update session with chat log and the new website code.
     chat_log.append({"role": "assistant", "content": ai_reply})
     request.session["chat_log"] = chat_log
     request.session["website_html"] = updated_html
