@@ -10,79 +10,91 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> {% block head %}{% endblock %}
     <style>
-        /* Body Layout */
+        /* CSS Variables for Easy Theme Updates */
+        
+         :root {
+            --primary-bg: #1f1f2e;
+            --secondary-bg: #282a36;
+            --text-color: #f8f8f2;
+            --accent-color: #bad7f5;
+            --accent-hover: #98c6e7;
+            --badge-bg: #1a2b4e;
+        }
+        /* Global Styles */
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
         
         body {
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            /* Flexbox layout */
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, #1f1f2e, #282a36);
-            color: #f8f8f2;
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
         }
-        /* Navbar */
+        /* Header / Navbar */
+        
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
         
         .navbar {
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            background-color: #1f1f2e;
-            z-index: 1000;
+            background-color: var(--primary-bg);
         }
         
         .navbar-brand {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: bold;
             display: flex;
             align-items: center;
-            margin-left: 15px;
-            color: #ffffff !important;
+            color: var(--text-color) !important;
             text-decoration: none;
+            margin-left: 15px;
         }
         
         .badge-beta {
-            background-color: #1a2b4e;
-            color: #ffffff;
-            font-size: 0.85rem;
-            padding: 0.5em 0.6em;
+            background-color: var(--badge-bg);
+            color: var(--text-color);
+            font-size: 0.75rem;
+            padding: 0.4em 0.6em;
             border-radius: 0.25rem;
             margin-left: 0.5rem;
-            transition: none;
         }
-        
-        .badge-beta:hover {
-            background-color: #1a2b4e;
-            color: #ffffff;
-            cursor: default;
-        }
-        /* Navbar links */
         
         .navbar-nav .nav-link {
-            color: #ffffff !important;
+            color: var(--text-color) !important;
             font-weight: bold;
             margin-right: 15px;
             transition: color 0.3s ease;
         }
         
         .navbar-nav .nav-link:hover {
-            color: #f8f8f2 !important;
+            color: var(--accent-hover) !important;
         }
-        /* Toggler icon for better mobile visibility */
         
         .navbar-toggler {
-            border-color: #ffffff;
-            /* Changed from #bad7f5 to white */
+            border-color: var(--text-color);
         }
         
         .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22' /%3E%3C/svg%3E");
-            /* Changed stroke color to white */
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23f8f8f2' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22' /%3E%3C/svg%3E");
         }
         
         .btn-get-started {
-            background-color: #bad7f5;
-            color: #1f1f2e;
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
             font-weight: bold;
             padding: 10px 20px;
             border-radius: 25px;
@@ -90,7 +102,7 @@
         }
         
         .btn-get-started:hover {
-            background-color: #98c6e7;
+            background-color: var(--accent-hover);
             transform: scale(1.05);
         }
         
@@ -98,86 +110,95 @@
             transform: scale(0.95);
             background-color: #37d372;
         }
-        /* Content Wrapper */
+        /* Main Content */
+        
+        main {
+            flex: 1;
+            padding: 1rem;
+        }
         
         .content-wrapper {
-            flex: 1;
             display: flex;
             flex-direction: column;
         }
         /* Footer */
         
         footer {
-            background-color: #1f1f2e;
-            color: #f8f8f2;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
             padding: 1rem;
+            text-align: center;
             flex-shrink: 0;
-            /* Prevents the footer from shrinking */
-            height: 60px;
         }
         
         footer p {
             margin: 0;
         }
-        /* Footer Fix for Mobile */
+        /* Responsive Adjustments */
         
-        @media (max-width: 767.98px) {
-            footer {
-                position: relative;
-                z-index: 10;
+        @media (max-width: 992px) {
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+            .navbar-nav .nav-link {
+                margin-right: 10px;
+                font-size: 0.9rem;
             }
         }
-        /* Ensure html and body can scroll */
         
-        html,
-        body {
-            overflow: auto;
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+            .btn-get-started {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                Helios <span class="badge-beta">Beta</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <form method="POST" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger nav-link text-white">Log Out</button>
-                        </form>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary text-white" href="{% url 'signup' %}">
-                            Get Started
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
+    <!-- Header / Navbar -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}">
+          Helios <span class="badge-beta">Beta</span>
+        </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <form method="POST" action="{% url 'logout' %}" class="d-flex">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger nav-link text-white">Log Out</button>
+                            </form>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary text-white" href="{% url 'signup' %}">Get Started</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
     <!-- Main Content Wrapper -->
-    <div class="content-wrapper container-fluid py-4">
+    <main class="content-wrapper container-fluid py-4">
         {% block content %}{% endblock %}
-    </div>
+    </main>
     <!-- Footer -->
-    <footer class="text-center">
+    <footer>
         <p>Helios © 2025. All rights reserved.</p>
     </footer>
-
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block scripts %}{% endblock %}

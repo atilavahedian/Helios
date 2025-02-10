@@ -1,5 +1,6 @@
+# main/views.py
+
 import json
-import re
 import openai
 import logging
 from django.shortcuts import render
@@ -14,7 +15,7 @@ from account.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
-# Set your OpenAI API key (using your pinned version)
+
 openai.api_key = "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"
 
 @require_POST
@@ -23,27 +24,22 @@ openai.api_key = "sk-proj-ursU39QLqkf5nBwmFxOfp5xXHla1crZ99NpRBNtQ9yGS-OXD4jaRov
 def chat(request):
     """
     Handles the AJAX POST request from the frontend:
-      1. Reads the user's message.
-      2. Calls OpenAI to build or modify the website.
-      3. Returns valid JSON with 'reply' and 'website_code'.
+      1. Reads user message
+      2. Calls OpenAI to build or modify the website
+      3. Returns JSON with 'reply' and 'website_html'
     """
-    # Parse the request body
-    try:
-        data = json.loads(request.body)
-    except Exception as e:
-        logger.error("Failed to parse request body: " + str(e), exc_info=True)
-        return JsonResponse({"error": "Invalid request format."}, status=400)
-
+    data = json.loads(request.body)
     user_message = data.get("message", "").strip()
     if not user_message:
         return JsonResponse({"error": "No message provided."}, status=400)
 
-    # Check if the user is exempt from daily prompt limits.
+    # Check if user is exempt from daily prompt limits.
     try:
         is_exempt = request.user.profile.is_exempt_from_prompt_limit
     except UserProfile.DoesNotExist:
         is_exempt = False
 
+    # Enforce daily prompt limit if not exempt
     if not is_exempt:
         today = timezone.now().date()
         user_prompt, _ = UserPrompt.objects.get_or_create(user=request.user, date=today)
@@ -53,35 +49,46 @@ def chat(request):
                 "remaining_prompts": 0
             }, status=403)
 
-    # Retrieve any existing website code from session (if any)
+    # Retrieve existing website from session
     current_html = request.session.get("website_html", "")
-    has_website = bool(current_html.strip())
+    has_website = bool(current_html.strip())  # True if we already have some website code
 
-    # Append the user's message to the chat log in session
+    # Record the conversation in session
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
 
-    # Enhanced system prompt for interactive, modern website design using Bootstrap 5.
+
     system_prompt = """
-    You are Helios, an advanced website-building assistant dedicated to creating modern, visually appealing, and highly responsive websites using the latest frameworks and design practices. Your task is to interact directly with the user to fully understand their website requirements by asking clarifying questions if needed, and then produce complete, production-ready website code.
+    You are Helios, an advanced website-building assistant focusing on modern, visually appealing web design. [do not use white font for a thing that has a white background!]
+    The user will provide instructions about building or modifying a website.
 
-    When a user provides instructions, you MUST:
-    1. Ask clarifying questions if any part of the request is ambiguous. In your "conversation" field, include a concise summary of your clarifications and design decisions.
-    2. Generate complete, self-contained website code that starts with <!DOCTYPE html> and includes all necessary HTML, CSS, and JavaScript. you should Use modern frameworks like Bootstrap 5 to ensure the design is responsive and attractive, and incorporate interactive elements (e.g., navigation bars, modals, carousels, subtle animations) where appropriate.
-    3. Return ONLY valid JSON enclosed within triple backticks (```). The JSON MUST have exactly two keys:
-    - "conversation": A plain text summary of your clarifications and design decisions.
-    - "website_code": The full, updated website code.
+    You MUST return valid JSON with exactly two keys:
+    1) "conversation": plain text only (no code blocks)
+    2) "website_code": the updated HTML/CSS/JS, preferably using too much Bootstrap  
+    and any modern styling/animations for a polished look.
 
-    Do not output anything outside the triple backticks.
+    Important:
+    - If 'has_website' is True, incorporate or refine the existing code in your new website_code.
+    - If 'has_website' is False, create a brand-new site from scratch with a well-structured layout and contemporary design.
+    - DO NOT include any code in the "conversation" field. All code must go in "website_code."
 
-    Example output:
-    { "conversation": "Based on the user's request for a modern mobile app landing page, I clarified the need for a bold hero section with an app preview, detailed feature sections, clear pricing tiers, and download buttons for both iOS and Android. I implemented a responsive design using Bootstrap 5 with interactive elements.", "website_code": "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'><title>Mobile App Landing</title></head><body><nav class='navbar navbar-expand-lg navbar-dark bg-dark'><a class='navbar-brand' href='#'>App Landing</a></nav><div class='container mt-4'><div class='row'><div class='col-md-6'>Feature Section 1</div><div class='col-md-6'>Feature Section 2</div></div></div><script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'></script></body></html>" }""".strip()
+    Example of the required output:
 
-    # Build the messages list based on whether an existing website exists.
+    {
+    "conversation": "Here is a concise overview of the changes I made...",
+    "website_code": "<!DOCTYPE html><html> ... your updated or newly created site ... </html>"
+    }
+    """.strip()
+
+
+    # Decide how to feed the model
     if has_website:
         messages_list = [
             {"role": "system", "content": system_prompt},
-            {"role": "assistant", "content": f"Existing website code:\n{current_html}"},
+            {
+                "role": "assistant",
+                "content": f"Existing website code:\n{current_html}"
+            },
             {"role": "user", "content": user_message},
         ]
     else:
@@ -90,43 +97,37 @@ def chat(request):
             {"role": "user", "content": user_message},
         ]
 
-    # Call OpenAI and process the response.
+    # Call OpenAI
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
+            model="gpt-4o-mini",  # Using the specified model name
             messages=messages_list,
-            temperature=0.2,  
+            temperature=0.7,
         )
         raw_content = response["choices"][0]["message"]["content"]
-        logger.debug(f"OpenAI raw response: {raw_content}")
+        logger.debug(f"OpenAI raw response: {raw_content}")  # Log the raw JSON/text for debugging
 
-        # Extract JSON enclosed in triple backticks if present.
-        json_match = re.search(r"```(.*?)```", raw_content, re.DOTALL)
-        if json_match:
-            json_str = json_match.group(1).strip()
-        else:
-            json_str = raw_content.strip()
+        # Attempt to parse the model's JSON
+        try:
+            parsed = json.loads(raw_content)
+            ai_reply = parsed.get("conversation", "")
+            updated_html = parsed.get("website_code", "")
+        except Exception:
+            # If the model didn't return valid JSON or missing keys
+            ai_reply = "Helios: Sorry, I couldn't generate the correct format."
+            updated_html = current_html
 
-        parsed = json.loads(json_str)
-        ai_reply = parsed.get("conversation", "")
-        updated_html = parsed.get("website_code", "")
-        if not ai_reply or not updated_html:
-            raise ValueError("Missing expected keys in response")
     except Exception as e:
-        logger.error("OpenAI API error or response parsing error: " + str(e), exc_info=True)
-        # Return error response without falling back to old website code.
-        return JsonResponse({
-            "error": "Failed to generate a valid website code for the latest prompt.",
-            "details": str(e)
-        }, status=500)
+        logger.error(f"OpenAI API error: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to generate website content."}, status=500)
 
-    # Update session with chat log and the new website code.
+    # Append AI response to chat
     chat_log.append({"role": "assistant", "content": ai_reply})
     request.session["chat_log"] = chat_log
     request.session["website_html"] = updated_html
     request.session.modified = True
 
-    # Update prompt count if not exempt.
+    # Update prompt count if not exempt
     if not is_exempt:
         user_prompt.count += 1
         user_prompt.save()
@@ -134,25 +135,41 @@ def chat(request):
     else:
         remaining_prompts = "Unlimited"
 
+    # Return final JSON
     return JsonResponse({
         "reply": ai_reply,
-        "website_code": updated_html,
+        "website_html": updated_html,
         "remaining_prompts": remaining_prompts
     })
 
+
 def home(request):
+    """
+    Renders the chat + website interface.
+    Initializes session data if not present.
+    """
     if "chat_log" not in request.session:
         request.session["chat_log"] = []
     if "website_html" not in request.session:
         request.session["website_html"] = "<h2>Welcome!</h2><p>Let's build your site!</p>"
+
     return render(request, "main/home.html", {
         "chat_log": request.session["chat_log"],
         "website_html": request.session["website_html"],
     })
 
+
 def home_view(request):
+    """
+    Simple home view if needed.
+    """
     return render(request, 'main/home.html')
+
 
 @login_required(login_url='/account/login/')
 def chat_view(request):
+    """
+    A dedicated chat view if desired.
+    """
     return render(request, 'main/chat.html')
+

@@ -215,7 +215,9 @@
         flex-grow: 1;
         padding: 15px;
         margin-bottom: 20px;
+        cursor: help;
     }
+    /* Tooltip is attached via Bootstrap attributes on browser-simulation */
     
     .browser-header {
         background-color: #282a36;
@@ -261,12 +263,15 @@
         height: 100%;
         padding: 10px;
     }
+    /* Animated transition for preview updates */
     
     .browser-content iframe {
         width: 100%;
         height: 100%;
         border: none;
         border-radius: 5px;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 1;
     }
     /* Progress Bar */
     
@@ -344,7 +349,7 @@
         color: #50fa7b;
         font-weight: bold;
     }
-    /* ---------- New Task Card Overlay (Merged from "new code") ---------- */
+    /* Floating Task Card Overlay */
     
     .task-card {
         position: absolute;
@@ -358,7 +363,6 @@
         padding: 15px;
         z-index: 2000;
         display: none;
-        /* Hidden by default */
     }
     
     .task-card h5 {
@@ -372,7 +376,6 @@
         color: #cfcfcf;
         margin-bottom: 8px;
         min-height: 20px;
-        /* Make space for rotating text */
     }
     
     .task-card .task-progress-bar {
@@ -386,7 +389,6 @@
     
     .task-card .task-progress-bar .task-progress {
         background-color: #ffffff;
-        /* White progress bar */
         width: 0%;
         height: 100%;
         transition: width 0.2s linear;
@@ -410,7 +412,6 @@
         }
         .chat-section {
             order: 0;
-            /* Chat on top */
             margin-bottom: 10px;
         }
         .workspace-section {
@@ -420,7 +421,6 @@
             min-height: 40vh;
             overflow: visible;
         }
-        /* Ensure iframe content does not cause overflow */
         .browser-content iframe {
             max-width: 100%;
             max-height: 100%;
@@ -454,7 +454,6 @@
             width: 80%;
             z-index: 1001;
         }
-        /* Make the task card appear near the bottom center on mobile */
         .task-card {
             top: auto;
             bottom: 15px;
@@ -475,6 +474,33 @@
             overflow-y: auto;
         }
     }
+    
+    @media (max-width: 576px) {
+        .chat-header h4 {
+            font-size: 1.2rem;
+        }
+        .input-section input[type="text"] {
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+        .input-section button {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+        .browser-title {
+            font-size: 0.9rem;
+        }
+        .progress-container {
+            bottom: 5px;
+            width: 90%;
+        }
+        .task-card {
+            width: 95%;
+            bottom: 10px;
+            right: 50%;
+            transform: translateX(50%);
+        }
+    }
 </style>
 {% endblock %} {% block content %}
 <div class="row h-100">
@@ -483,11 +509,9 @@
         <div class="chat-header mb-3">
             <h4>Helios Chat</h4>
         </div>
-
         <div id="chat-box" class="chat-box">
             <!-- Chat messages will appear here -->
         </div>
-
         {% if user.is_authenticated %}
         <form id="chat-form" class="input-section d-flex align-items-center">
             <input type="text" id="user-input" class="form-control me-2" placeholder="Give Helios a task..." required>
@@ -505,10 +529,9 @@
         </div>
         {% endif %}
     </div>
-
     <!-- Workspace Section -->
     <div class="workspace-section" id="workspace-panel">
-        <div class="browser-simulation">
+        <div class="browser-simulation" data-bs-toggle="tooltip" data-bs-placement="top" title="This is your live website preview. Hover for tips.">
             <div class="browser-header d-flex align-items-center mb-3">
                 <div class="circle-buttons">
                     <span class="circle red"></span>
@@ -519,8 +542,7 @@
             </div>
             <div class="browser-content">
                 <!-- Initial Slogan -->
-                <iframe id="website-preview" srcdoc="<h2 style='text-align:center; margin-top:40px;'>Welcome to Helios!<br/><em>Let's build something amazing!</em></h2>" sandbox="allow-scripts allow-same-origin">
-                </iframe>
+                <iframe id="website-preview" srcdoc="{{ website_html|safe }}" sandbox="allow-scripts allow-same-origin"></iframe>
             </div>
         </div>
         <!-- Progress Bar -->
@@ -529,7 +551,6 @@
         </div>
     </div>
 </div>
-
 <!-- Floating Task Card for Live Updates -->
 <div id="task-card" class="task-card">
     <h5 id="task-title">Task Title</h5>
@@ -552,7 +573,7 @@
         const progressBar = document.getElementById('progress-bar');
         const promptInfo = document.getElementById('prompt-info');
 
-        /* ---------- Floating Task Card References (Merged from "new code") ---------- */
+        /* ---------- Floating Task Card References ---------- */
         const taskCard = document.getElementById('task-card');
         const taskTitle = document.getElementById('task-title');
         const taskSubtitle = document.getElementById('task-subtitle');
@@ -577,11 +598,30 @@
         let taskTimer = null;
         let secondsElapsed = 0;
         let statusCycleInterval = null;
-
-        /* ---------- Original Variables ---------- */
         let isProcessing = false;
         let progressInterval = null;
         let examplePromptsDisplayed = false;
+
+        /* ---------- Onboarding Popover (Show Only Once) ---------- */
+        if (!localStorage.getItem("onboardingShown")) {
+            var popover = new bootstrap.Popover(workspacePanel, {
+                content: "This is your live workspace preview. It updates automatically. Hover over elements for more tips.",
+                trigger: 'manual',
+                placement: 'bottom',
+                animation: true
+            });
+            popover.show();
+            setTimeout(() => {
+                popover.hide();
+            }, 5000);
+            localStorage.setItem("onboardingShown", "true");
+        }
+
+        /* ---------- Initialize Tooltips ---------- */
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
 
         // Example Prompts Data
         const examplePrompts = [{
@@ -616,7 +656,6 @@
             prompt: "Develop an impactful, full-featured website for a non-profit organization. Design a homepage that clearly communicates the mission with compelling visuals, a Projects page that showcases case studies with progress bars and impact metrics, a Donation page with secure payment integration and inspiring calls-to-action, and a Volunteer page featuring event calendars and sign-up forms. Utilize a design that balances emotion with professionalism, ensuring accessibility and responsiveness."
         }];
 
-
         // Handle form submission
         if (chatForm) {
             chatForm.addEventListener('submit', function(e) {
@@ -635,32 +674,22 @@
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('chat-message', sender, 'mb-4');
             msgDiv.style.textAlign = sender === 'user' ? 'right' : 'left';
-
             const headerDiv = document.createElement('div');
             headerDiv.classList.add('message-header');
             headerDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Helios'}</strong>
                                    <span class="timestamp">${timestamp}</span>`;
-
             const contentDiv = document.createElement('div');
             contentDiv.classList.add('message-content');
-
-            // Check if the message is a structured response
             if (sender === 'bot' && typeof message === 'object' && message.title) {
-                // Create structured response
                 const structuredDiv = createStructuredResponse(message);
                 contentDiv.appendChild(structuredDiv);
             } else {
                 contentDiv.innerHTML = message;
             }
-
             msgDiv.appendChild(headerDiv);
             msgDiv.appendChild(contentDiv);
             chatBox.appendChild(msgDiv);
-
-            // Auto-scroll to bottom
             chatBox.scrollTop = chatBox.scrollHeight;
-
-            // If it's the welcome message, display example prompts
             if (sender === 'bot' && !examplePromptsDisplayed) {
                 displayExamplePrompts();
                 examplePromptsDisplayed = true;
@@ -671,23 +700,16 @@
         function createStructuredResponse(data) {
             const cardDiv = document.createElement('div');
             cardDiv.classList.add('structured-response');
-
-            // Header Section
             const header = document.createElement('div');
             header.classList.add('title');
             header.innerText = data.title;
             cardDiv.appendChild(header);
-
-            // Status Indicator
             const statusDiv = document.createElement('div');
             statusDiv.classList.add('status');
-
             if (data.status === 'in_progress') {
-                // Progress Bar
                 const progress = document.createElement('div');
                 progress.classList.add('progress');
                 progress.style.width = '100%';
-
                 const progressBarElement = document.createElement('div');
                 progressBarElement.classList.add('progress-bar', 'progress-bar-striped', 'progress-bar-animated');
                 progressBarElement.setAttribute('role', 'progressbar');
@@ -696,41 +718,32 @@
                 progressBarElement.setAttribute('aria-valuemax', '100');
                 progressBarElement.style.width = '100%';
                 progressBarElement.innerText = 'Analysis in progress...';
-
                 progress.appendChild(progressBarElement);
                 statusDiv.appendChild(progress);
             } else {
-                // Static Status Text
                 const statusText = document.createElement('span');
                 statusText.classList.add('status-text');
                 statusText.innerText = data.status_text || 'Solution provided successfully';
                 statusDiv.appendChild(statusText);
             }
             cardDiv.appendChild(statusDiv);
-
-            // Details Section
             if (data.details) {
                 const detailsDiv = document.createElement('div');
                 detailsDiv.classList.add('details');
                 detailsDiv.innerText = data.details;
                 cardDiv.appendChild(detailsDiv);
             }
-
-            // Code Snippet
             if (data.code_snippet) {
                 const codePre = document.createElement('pre');
                 codePre.innerText = data.code_snippet;
                 cardDiv.appendChild(codePre);
             }
-
-            // Footer Section
             if (data.footer) {
                 const footerDiv = document.createElement('div');
                 footerDiv.classList.add('footer');
                 footerDiv.innerText = data.footer;
                 cardDiv.appendChild(footerDiv);
             }
-
             return cardDiv;
         }
 
@@ -739,7 +752,6 @@
             const promptsDiv = document.createElement('div');
             promptsDiv.classList.add('example-prompts');
             promptsDiv.id = 'example-prompts';
-
             examplePrompts.forEach((item, index) => {
                 const btn = document.createElement('button');
                 btn.classList.add('btn-example');
@@ -748,10 +760,7 @@
                 btn.dataset.index = index;
                 promptsDiv.appendChild(btn);
             });
-
             chatBox.appendChild(promptsDiv);
-
-            // Add event listeners to example prompt buttons
             const exampleButtons = document.querySelectorAll('.btn-example');
             exampleButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -782,18 +791,13 @@
             return `${hours}:${minutes} ${ampm}`;
         }
 
-        // Send message to server
+        // Send message to server with animated workspace update and proper content wrapping
         async function sendMessage(message) {
             if (isProcessing) return;
             isProcessing = true;
             toggleInputs(false);
-
-            // Start the floating task card
             startTaskTracking(message);
-
-            // Show and animate progress bar
             showProgressBar();
-
             try {
                 const response = await fetch('/chat/', {
                     method: 'POST',
@@ -805,41 +809,48 @@
                         message
                     })
                 });
-
                 const data = await response.json();
-
-                // Stop main progress bar
                 clearInterval(progressInterval);
                 progressBar.style.width = '100%';
-
-                // Mark the floating card as completed
                 stopTaskTracking(true);
-
                 if (response.ok) {
                     if (data.type === 'structured') {
-                        // Structured Response
                         appendMessage('bot', data.content);
                     } else {
-                        // Regular Text Response
                         appendMessage('bot', data.reply);
-                        // Update workspace iframe
-                        websitePreview.srcdoc = data.website_html || `
-                            <h2 style="text-align:center; margin-top:40px;">
-                                Welcome to Helios!<br/>
-                                <em>Let's build something amazing!</em>
-                            </h2>
-                        `;
+                        // Animate workspace update: fade out, update, then fade in
+                        websitePreview.style.opacity = 0;
+                        setTimeout(() => {
+                            let websiteHtml = data.website_html || `
+                                <h2 style="text-align:center; margin-top:40px;">
+                                    Welcome to Helios!<br/>
+                                    <em>Let's build something amazing!</em>
+                                </h2>`;
+                            // Remove any unwanted copyright text using a general regex
+                            websiteHtml = websiteHtml.replace(/©\s*\d{4}[\s\S]*?All\s+Rights\s+Reserved\.?/gi, '');
+                            // If the generated HTML does not contain a full HTML document, wrap it
+                            if (!/<html[\s>]/i.test(websiteHtml)) {
+                                websiteHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>body { margin: 0; padding: 0; }</style>
+  </head>
+  <body>${websiteHtml}</body>
+</html>`;
+                            }
+                            websitePreview.srcdoc = websiteHtml;
+                            websitePreview.style.opacity = 1;
+                        }, 300);
                     }
-
-                    // Display prompt info
                     if (data.remaining_prompts !== "Unlimited") {
                         promptInfo.innerHTML = `You have <strong>${data.remaining_prompts}</strong> prompts remaining today.`;
                     } else {
                         promptInfo.innerHTML = `You have <strong>Unlimited</strong> prompts.`;
                     }
                     promptInfo.style.display = 'block';
-
-                    // Auto-scroll to workspace on mobile
                     if (window.innerWidth <= 767.98) {
                         setTimeout(() => {
                             workspacePanel.scrollIntoView({
@@ -848,7 +859,6 @@
                         }, 300);
                     }
                 } else {
-                    // Handle server errors
                     const errorMsg = data.error || 'Sorry, something went wrong. Please try again.';
                     appendMessage('bot', errorMsg);
                     if (data.remaining_prompts !== undefined) {
@@ -861,7 +871,6 @@
                 appendMessage('bot', 'Sorry, I couldn\'t process your request.');
                 stopTaskTracking(false);
             } finally {
-                // Hide progress bar and re-enable inputs
                 setTimeout(() => {
                     hideProgressBar();
                     toggleInputs(true);
@@ -912,26 +921,19 @@
             return cookieValue;
         }
 
-        /* ---- TASK CARD LOGIC (Merged from "new code") ---- */
+        /* ---- TASK CARD LOGIC ---- */
         statusCycleInterval = null;
         taskTimer = null;
         secondsElapsed = 0;
 
         function startTaskTracking(promptText) {
-            // Show the floating card
             taskCard.style.display = 'block';
-            // Title: shorten if too long
-            taskTitle.textContent = (promptText.length > 45) ?
-                (promptText.substring(0, 42) + '...') :
-                promptText;
-
+            taskTitle.textContent = (promptText.length > 45) ? (promptText.substring(0, 42) + '...') : promptText;
             taskSubtitle.textContent = 'Generating website...';
             taskProgressBar.style.width = '0%';
             taskTime.textContent = 'Time: 0s';
             secondsElapsed = 0;
             statusIndex = 0;
-
-            // Animate the white bar
             let cardWidth = 0;
             taskCard.dataset.cardInterval = setInterval(() => {
                 if (cardWidth < 98) {
@@ -939,14 +941,10 @@
                     taskProgressBar.style.width = cardWidth + '%';
                 }
             }, 800);
-
-            // Time counter
             taskTimer = setInterval(() => {
                 secondsElapsed++;
                 taskTime.textContent = `Time: ${secondsElapsed}s`;
             }, 1000);
-
-            // Rotate the live status messages every 1.8s
             statusCycleInterval = setInterval(() => {
                 statusIndex = (statusIndex + 1) % liveStatuses.length;
                 taskSubtitle.textContent = liveStatuses[statusIndex];
@@ -954,24 +952,20 @@
         }
 
         function stopTaskTracking(success) {
-            // Clear intervals
             clearInterval(taskTimer);
             clearInterval(statusCycleInterval);
             const cardInterval = taskCard.dataset.cardInterval;
             if (cardInterval) clearInterval(cardInterval);
-
             if (success) {
                 taskSubtitle.textContent = `Completed in ${secondsElapsed}s`;
                 taskProgressBar.style.width = '100%';
             } else {
                 taskSubtitle.textContent = 'Error encountered.';
             }
-            // Hide after 4s
             setTimeout(() => {
                 taskCard.style.display = 'none';
             }, 4000);
         }
-
         // Initial system greeting
         appendMessage('bot', 'Welcome! How can I assist you today?');
     });
