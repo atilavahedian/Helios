@@ -109,6 +109,14 @@
         background-color: #282a36;
         color: #bad7f5;
     }
+    /* Remove background for task card container */
+    
+    .chat-message.bot .message-content:has(.in-chat-task-card),
+    .chat-message.bot .message-content.task-card-container {
+        background-color: transparent;
+        padding: 0;
+        box-shadow: none;
+    }
     
     .example-prompts {
         margin: 20px auto;
@@ -357,12 +365,13 @@
         right: 15px;
         width: 310px;
         border-radius: 10px;
-        background-color: #3c3d50;
-        color: #f8f8f2;
+        background-color: var(--card-bg);
+        color: var(--text-color);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         padding: 15px;
         z-index: 2000;
         display: none;
+        border: 1px solid var(--border-color);
     }
     
     .task-card h5 {
@@ -373,13 +382,13 @@
     
     .task-card .task-subtitle {
         font-size: 0.85rem;
-        color: #cfcfcf;
+        color: var(--muted-text);
         margin-bottom: 8px;
         min-height: 20px;
     }
     
     .task-card .task-progress-bar {
-        background-color: #999ab7;
+        background-color: rgba(107, 130, 168, 0.2);
         height: 6px;
         border-radius: 3px;
         overflow: hidden;
@@ -388,7 +397,7 @@
     }
     
     .task-card .task-progress-bar .task-progress {
-        background-color: #ffffff;
+        background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
         width: 0%;
         height: 100%;
         transition: width 0.2s linear;
@@ -396,9 +405,109 @@
     
     .task-card .task-time {
         font-size: 0.85rem;
-        color: #9f9fbe;
+        color: var(--muted-text);
     }
-    /* Responsive Design */
+    /* In-Chat Task Card */
+    
+    .in-chat-task-card {
+        background: linear-gradient(135deg, var(--secondary-bg), var(--primary-bg));
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 0;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        max-width: 100%;
+        display: inline-block;
+        width: 100%;
+        border: 1px solid var(--border-color);
+    }
+    
+    .in-chat-task-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.343-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(107, 130, 168, 0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.2;
+        z-index: 0;
+    }
+    
+    .in-chat-task-card .task-title {
+        color: var(--text-color);
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .in-chat-task-card .task-subtitle {
+        color: var(--accent-light);
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+        position: relative;
+        z-index: 1;
+        font-style: italic;
+    }
+    
+    .in-chat-task-card .task-progress-container {
+        background-color: rgba(107, 130, 168, 0.2);
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .in-chat-task-card .task-progress {
+        background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+        height: 100%;
+        width: 0%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        position: relative;
+        box-shadow: 0 0 10px rgba(107, 130, 168, 0.3);
+    }
+    
+    .in-chat-task-card .task-time {
+        color: var(--muted-text);
+        font-size: 0.85rem;
+        text-align: right;
+        position: relative;
+        z-index: 1;
+        font-weight: bold;
+    }
+    
+    .in-chat-task-card .pulse {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--accent-hover);
+        right: 15px;
+        top: 15px;
+        z-index: 1;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(107, 130, 168, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(107, 130, 168, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(107, 130, 168, 0);
+        }
+    }
     
     @media (max-width: 767.98px) {
         .row.h-100 {
@@ -454,12 +563,8 @@
             width: 80%;
             z-index: 1001;
         }
-        .task-card {
-            top: auto;
-            bottom: 15px;
-            right: 50%;
-            transform: translateX(50%);
-            width: 85%;
+        .in-chat-task-card {
+            max-width: 100%;
         }
     }
     
@@ -494,7 +599,7 @@
             bottom: 5px;
             width: 90%;
         }
-        .task-card {
+        .in-chat-task-card {
             width: 95%;
             bottom: 10px;
             right: 50%;
@@ -551,15 +656,6 @@
         </div>
     </div>
 </div>
-<!-- Floating Task Card for Live Updates -->
-<div id="task-card" class="task-card">
-    <h5 id="task-title">Task Title</h5>
-    <div class="task-subtitle" id="task-subtitle">Please wait...</div>
-    <div class="task-progress-bar">
-        <div class="task-progress" id="task-progress"></div>
-    </div>
-    <div class="task-time" id="task-time">Time: 0s</div>
-</div>
 {% endblock %} {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -573,12 +669,12 @@
         const progressBar = document.getElementById('progress-bar');
         const promptInfo = document.getElementById('prompt-info');
 
-        /* ---------- Floating Task Card References ---------- */
-        const taskCard = document.getElementById('task-card');
-        const taskTitle = document.getElementById('task-title');
-        const taskSubtitle = document.getElementById('task-subtitle');
-        const taskProgressBar = document.getElementById('task-progress');
-        const taskTime = document.getElementById('task-time');
+        /* ---------- Task Card References ---------- */
+        let taskCardElement = null;
+        let taskTitleElement = null;
+        let taskSubtitleElement = null;
+        let taskProgressElement = null;
+        let taskTimeElement = null;
         const liveStatuses = [
             "Initializing design pipeline...",
             "Parsing CSS frameworks...",
@@ -632,7 +728,7 @@
             prompt: "Generate a complete e-commerce website with a sleek, user-centered design. Create a homepage with high-resolution banner images, a product gallery with hover effects and quick views, a detailed product page with zoom-in functionality, a shopping cart with real-time price updates, and a secure, streamlined checkout process. Incorporate modern UI elements and responsive design principles for an optimal experience on all devices."
         }, {
             category: "Personal Blog",
-            prompt: "Design an elegant and responsive personal blog website. The homepage should feature a clean layout with featured posts, while the blog section displays articles in an engaging grid layout. Include an About page that tells the author’s story with professional photography and a Contact page with integrated social media links. Emphasize readability, modern typography, and tasteful use of white space throughout the site."
+            prompt: "Design an elegant and responsive personal blog website. The homepage should feature a clean layout with featured posts, while the blog section displays articles in an engaging grid layout. Include an About page that tells the author's story with professional photography and a Contact page with integrated social media links. Emphasize readability, modern typography, and tasteful use of white space throughout the site."
         }, {
             category: "Restaurant Website",
             prompt: "Build a high-end, full-stack restaurant website that captures both style and functionality. Design a homepage with a captivating hero image and a parallax scrolling effect, a Menu page displaying dishes with high-quality images and descriptions, and a Reservation page featuring an interactive date/time picker with real-time availability. Include additional pages such as Customer Testimonials, About Us, and a location/map page. The design should be mobile-responsive, incorporate subtle animations, and use a warm, inviting color palette."
@@ -641,7 +737,7 @@
             prompt: "Develop a dynamic landing page for a new mobile app. The site should feature a bold, eye-catching hero section with an app preview video or mockup, detailed sections highlighting key features, clear pricing tiers, and prominent download buttons for iOS and Android. Utilize modern design trends with clean typography, engaging micro-interactions, and a layout that guides the visitor through the value proposition of the app."
         }, {
             category: "Photography Studio",
-            prompt: "Create a visually stunning website for a photography studio that highlights a rich portfolio. Include a homepage with a fullscreen slideshow, galleries organized by project or category with lightbox viewing, an About page that shares the studio’s creative philosophy, and a Booking page with a simple form and calendar integration. Emphasize minimalist design, high-quality imagery, and smooth transitions between sections."
+            prompt: "Create a visually stunning website for a photography studio that highlights a rich portfolio. Include a homepage with a fullscreen slideshow, galleries organized by project or category with lightbox viewing, an About page that shares the studio's creative philosophy, and a Booking page with a simple form and calendar integration. Emphasize minimalist design, high-quality imagery, and smooth transitions between sections."
         }, {
             category: "Corporate Consulting",
             prompt: "Design a professional and sophisticated corporate website for a consulting firm. The homepage should include an impactful hero section, a Services page detailing offerings with iconography, a Team page with interactive profiles and bios, and a Contact page with a built-in inquiry form. Use a modern, clean design with consistent branding, subtle animation effects, and a layout that inspires trust and expertise."
@@ -796,8 +892,11 @@
             if (isProcessing) return;
             isProcessing = true;
             toggleInputs(false);
-            startTaskTracking(message);
+
+            // Create task card message and store its reference
+            const taskCardMessageRef = startTaskTracking(message);
             showProgressBar();
+
             try {
                 const response = await fetch('/chat/', {
                     method: 'POST',
@@ -812,8 +911,16 @@
                 const data = await response.json();
                 clearInterval(progressInterval);
                 progressBar.style.width = '100%';
+
+                // Stop task tracking but don't remove the card yet
                 stopTaskTracking(true);
+
                 if (response.ok) {
+                    // Remove the task card message from the DOM
+                    if (taskCardMessageRef && taskCardMessageRef.parentNode) {
+                        taskCardMessageRef.remove();
+                    }
+
                     if (data.type === 'structured') {
                         appendMessage('bot', data.content);
                     } else {
@@ -859,6 +966,11 @@
                         }, 300);
                     }
                 } else {
+                    // Remove the task card message from the DOM
+                    if (taskCardMessageRef && taskCardMessageRef.parentNode) {
+                        taskCardMessageRef.remove();
+                    }
+
                     const errorMsg = data.error || 'Sorry, something went wrong. Please try again.';
                     appendMessage('bot', errorMsg);
                     if (data.remaining_prompts !== undefined) {
@@ -868,6 +980,12 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
+
+                // Remove the task card message from the DOM
+                if (taskCardMessageRef && taskCardMessageRef.parentNode) {
+                    taskCardMessageRef.remove();
+                }
+
                 appendMessage('bot', 'Sorry, I couldn\'t process your request.');
                 stopTaskTracking(false);
             } finally {
@@ -927,44 +1045,145 @@
         secondsElapsed = 0;
 
         function startTaskTracking(promptText) {
-            taskCard.style.display = 'block';
+            // Create in-chat task card
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', 'bot', 'mb-4');
+            msgDiv.style.textAlign = 'left';
+
+            const headerDiv = document.createElement('div');
+            headerDiv.classList.add('message-header');
+            headerDiv.innerHTML = `<strong>Helios</strong>
+                                   <span class="timestamp">${getCurrentTime()}</span>`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            contentDiv.classList.add('task-card-container');
+
+            // Remove background for task card container
+            contentDiv.style.backgroundColor = 'transparent';
+            contentDiv.style.padding = '0';
+            contentDiv.style.boxShadow = 'none';
+
+            // Create the task card
+            const taskCard = document.createElement('div');
+            taskCard.classList.add('in-chat-task-card');
+            taskCard.id = 'in-chat-task-card';
+
+            // Add pulse indicator
+            const pulseIndicator = document.createElement('div');
+            pulseIndicator.classList.add('pulse');
+            taskCard.appendChild(pulseIndicator);
+
+            // Add task title
+            const taskTitle = document.createElement('div');
+            taskTitle.classList.add('task-title');
+            taskTitle.id = 'task-title';
             taskTitle.textContent = (promptText.length > 45) ? (promptText.substring(0, 42) + '...') : promptText;
+            taskCard.appendChild(taskTitle);
+
+            // Add task subtitle
+            const taskSubtitle = document.createElement('div');
+            taskSubtitle.classList.add('task-subtitle');
+            taskSubtitle.id = 'task-subtitle';
             taskSubtitle.textContent = 'Generating website...';
-            taskProgressBar.style.width = '0%';
+            taskCard.appendChild(taskSubtitle);
+
+            // Add progress container and bar
+            const progressContainer = document.createElement('div');
+            progressContainer.classList.add('task-progress-container');
+
+            const progressBar = document.createElement('div');
+            progressBar.classList.add('task-progress');
+            progressBar.id = 'task-progress';
+            progressContainer.appendChild(progressBar);
+            taskCard.appendChild(progressContainer);
+
+            // Add time indicator
+            const taskTime = document.createElement('div');
+            taskTime.classList.add('task-time');
+            taskTime.id = 'task-time';
             taskTime.textContent = 'Time: 0s';
+            taskCard.appendChild(taskTime);
+
+            // Add task card to content div
+            contentDiv.appendChild(taskCard);
+
+            // Assemble message
+            msgDiv.appendChild(headerDiv);
+            msgDiv.appendChild(contentDiv);
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Store references to elements
+            taskCardElement = taskCard;
+            taskTitleElement = taskTitle;
+            taskSubtitleElement = taskSubtitle;
+            taskProgressElement = progressBar;
+            taskTimeElement = taskTime;
+
+            // Start tracking
             secondsElapsed = 0;
             statusIndex = 0;
             let cardWidth = 0;
-            taskCard.dataset.cardInterval = setInterval(() => {
+
+            const cardInterval = setInterval(() => {
                 if (cardWidth < 98) {
                     cardWidth += 2;
-                    taskProgressBar.style.width = cardWidth + '%';
+                    taskProgressElement.style.width = cardWidth + '%';
                 }
             }, 800);
+
+            taskCardElement.dataset.cardInterval = cardInterval;
+
             taskTimer = setInterval(() => {
                 secondsElapsed++;
-                taskTime.textContent = `Time: ${secondsElapsed}s`;
+                taskTimeElement.textContent = `Time: ${secondsElapsed}s`;
             }, 1000);
+
             statusCycleInterval = setInterval(() => {
                 statusIndex = (statusIndex + 1) % liveStatuses.length;
-                taskSubtitle.textContent = liveStatuses[statusIndex];
+                taskSubtitleElement.textContent = liveStatuses[statusIndex];
             }, 1800);
+
+            return msgDiv;
         }
 
         function stopTaskTracking(success) {
+            if (!taskCardElement) return;
+
             clearInterval(taskTimer);
             clearInterval(statusCycleInterval);
-            const cardInterval = taskCard.dataset.cardInterval;
-            if (cardInterval) clearInterval(cardInterval);
+
+            const cardInterval = taskCardElement ? taskCardElement.dataset.cardInterval : null;
+            if (cardInterval) clearInterval(parseInt(cardInterval));
+
             if (success) {
-                taskSubtitle.textContent = `Completed in ${secondsElapsed}s`;
-                taskProgressBar.style.width = '100%';
+                if (taskSubtitleElement) {
+                    taskSubtitleElement.textContent = `Completed in ${secondsElapsed}s`;
+                }
+                if (taskProgressElement) {
+                    taskProgressElement.style.width = '100%';
+                }
             } else {
-                taskSubtitle.textContent = 'Error encountered.';
+                if (taskSubtitleElement) {
+                    taskSubtitleElement.textContent = 'Error encountered.';
+                }
             }
-            setTimeout(() => {
-                taskCard.style.display = 'none';
-            }, 4000);
+
+            // Remove the pulse indicator after completion
+            if (taskCardElement) {
+                const pulseElement = taskCardElement.querySelector('.pulse');
+                if (pulseElement) {
+                    pulseElement.style.display = 'none';
+                }
+            }
+
+            // Reset references
+            taskCardElement = null;
+            taskTitleElement = null;
+            taskSubtitleElement = null;
+            taskProgressElement = null;
+            taskTimeElement = null;
         }
         // Initial system greeting
         appendMessage('bot', 'Welcome! How can I assist you today?');

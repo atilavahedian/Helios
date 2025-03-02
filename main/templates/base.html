@@ -8,17 +8,26 @@
     <title>{% block title %}Helios{% endblock %}</title>
     <link rel="shortcut icon" href="https://i.postimg.cc/FzWVwHJx/wired-lineal-27-globe-hover-rotate.png">
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> {% block head %}{% endblock %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"> {% block head %}{% endblock %}
     <style>
         /* CSS Variables for Easy Theme Updates */
         
          :root {
-            --primary-bg: #1f1f2e;
-            --secondary-bg: #282a36;
-            --text-color: #f8f8f2;
-            --accent-color: #bad7f5;
-            --accent-hover: #98c6e7;
-            --badge-bg: #1a2b4e;
+            --primary-bg: #2D3047;
+            --secondary-bg: #353A5F;
+            --text-color: #F2F2F2;
+            --accent-color: #6B82A8;
+            --accent-hover: #89A2C8;
+            --accent-light: #D1DCF0;
+            --badge-bg: #89A2C8;
+            --card-bg: #353A5F;
+            --danger: #D67474;
+            --danger-hover: #BF5555;
+            --muted-text: #B9C1D2;
+            --border-color: #474D75;
+            --input-bg: rgba(65, 70, 105, 0.8);
         }
         /* Global Styles */
         
@@ -36,10 +45,11 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            background: linear-gradient(150deg, var(--primary-bg), var(--secondary-bg));
             color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
             overflow-x: hidden;
+            line-height: 1.6;
         }
         /* Header / Navbar */
         
@@ -50,71 +60,122 @@
         }
         
         .navbar {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            background-color: var(--primary-bg);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            background-color: rgba(45, 48, 71, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .navbar-brand {
-            font-size: 1.75rem;
-            font-weight: bold;
+            font-size: 1.5rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             color: var(--text-color) !important;
             text-decoration: none;
             margin-left: 15px;
+            letter-spacing: 0.5px;
         }
         
         .badge-beta {
             background-color: var(--badge-bg);
-            color: var(--text-color);
-            font-size: 0.75rem;
-            padding: 0.4em 0.6em;
-            border-radius: 0.25rem;
+            color: var(--primary-bg);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.25em 0.6em;
+            border-radius: 4px;
             margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .navbar-nav {
+            margin-right: 15px;
+        }
+        
+        .navbar-nav .nav-item {
+            margin: 0 5px;
         }
         
         .navbar-nav .nav-link {
-            color: var(--text-color) !important;
-            font-weight: bold;
-            margin-right: 15px;
-            transition: color 0.3s ease;
+            color: var(--muted-text) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
         }
         
         .navbar-nav .nav-link:hover {
-            color: var(--accent-hover) !important;
+            color: var(--accent-light) !important;
         }
         
         .navbar-toggler {
-            border-color: var(--text-color);
+            border-color: var(--border-color);
+            padding: 4px 8px;
         }
         
         .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23f8f8f2' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22' /%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23B9C1D2' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22' /%3E%3C/svg%3E");
         }
         
-        .btn-get-started {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 25px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+        .btn-theme {
+            background: linear-gradient(135deg, #6B82A8, #536480);
+            border: none;
+            border-radius: 6px;
+            color: var(--text-color) !important;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         
-        .btn-get-started:hover {
-            background-color: var(--accent-hover);
-            transform: scale(1.05);
+        .btn-theme:hover {
+            background: linear-gradient(135deg, #7B91B6, #5D708F);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
         }
         
-        .btn-get-started:active {
-            transform: scale(0.95);
-            background-color: #37d372;
+        .btn-theme-outline {
+            background: transparent;
+            border: 1.5px solid #6B82A8;
+            border-radius: 6px;
+            color: #B9C1D2 !important;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            padding: 7px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-theme-outline:hover {
+            background-color: rgba(107, 130, 168, 0.1);
+            border-color: var(--accent-hover);
+            color: var(--accent-light) !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), var(--danger-hover));
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #C86464, #AF4949);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
         }
         /* Main Content */
         
         main {
             flex: 1;
-            padding: 1rem;
+            padding: 1.5rem;
         }
         
         .content-wrapper {
@@ -124,11 +185,14 @@
         /* Footer */
         
         footer {
-            background-color: var(--primary-bg);
-            color: var(--text-color);
+            background-color: rgba(45, 48, 71, 0.9);
+            color: var(--muted-text);
             padding: 1rem;
             text-align: center;
             flex-shrink: 0;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            letter-spacing: 0.2px;
         }
         
         footer p {
@@ -138,21 +202,32 @@
         
         @media (max-width: 992px) {
             .navbar-brand {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
             }
             .navbar-nav .nav-link {
-                margin-right: 10px;
+                margin-right: 5px;
                 font-size: 0.9rem;
+            }
+            .navbar-collapse {
+                background-color: rgba(45, 48, 71, 0.98);
+                padding: 10px;
+                border-radius: 8px;
+                margin-top: 10px;
+                border: 1px solid var(--border-color);
             }
         }
         
         @media (max-width: 576px) {
             .navbar-brand {
-                font-size: 1.25rem;
+                font-size: 1.2rem;
             }
-            .btn-get-started {
-                padding: 8px 16px;
+            .btn-theme,
+            .btn-theme-outline {
+                padding: 7px 14px;
                 font-size: 0.9rem;
+            }
+            .navbar-nav .nav-item {
+                margin: 5px 0;
             }
         }
     </style>
@@ -164,26 +239,29 @@
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'home' %}">
-          Helios <span class="badge-beta">Beta</span>
-        </a>
+                    Helios <span class="badge-beta">Beta</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                    <ul class="navbar-nav align-items-center">
                         {% if user.is_authenticated %}
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
                             <form method="POST" action="{% url 'logout' %}" class="d-flex">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-danger nav-link text-white">Log Out</button>
+                                <button type="submit" class="btn btn-danger">Log Out</button>
                             </form>
                         </li>
                         {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            <a class="btn btn-theme-outline" href="{% url 'login' %}">Login</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="btn btn-primary text-white" href="{% url 'signup' %}">Get Started</a>
+                        <li class="nav-item ms-2">
+                            <a class="btn btn-theme" href="{% url 'signup' %}">Get Started</a>
                         </li>
                         {% endif %}
                     </ul>
