@@ -4,13 +4,15 @@ import json
 import openai
 import logging
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.utils import timezone
 from .models import UserPrompt
+from .models import Website
 from account.models import UserProfile
 
 logger = logging.getLogger(__name__)
@@ -172,4 +174,43 @@ def chat_view(request):
     A dedicated chat view if desired.
     """
     return render(request, 'main/chat.html')
+
+
+@require_POST
+@login_required
+def launch_site(request):
+    """Persist the current website HTML and return a public URL."""
+    data = json.loads(request.body)
+    slug = data.get('slug')
+    if not slug:
+        return JsonResponse({'error': 'Missing site name.'}, status=400)
+
+    html = request.session.get('website_html', '')
+    if not html:
+        return JsonResponse({'error': 'No website to launch.'}, status=400)
+
+    # Ensure slug uniqueness
+    base_slug = slug
+    counter = 1
+    while Website.objects.filter(slug=slug).exclude(user=request.user).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    website, _ = Website.objects.update_or_create(
+        user=request.user,
+        defaults={'slug': slug, 'html_content': html}
+    )
+
+    url = request.build_absolute_uri(reverse('view_website', args=[website.slug]))
+    return JsonResponse({'url': url})
+
+
+def view_website(request, slug):
+    """Serve the launched website."""
+    try:
+        website = Website.objects.get(slug=slug)
+    except Website.DoesNotExist:
+        return HttpResponse("Website not found", status=404)
+
+    return HttpResponse(website.html_content)
 

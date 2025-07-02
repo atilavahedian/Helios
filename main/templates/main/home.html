@@ -761,6 +761,15 @@
                 appendMessage('user', message);
                 userInput.value = '';
                 removeExamplePrompts();
+
+                if (message.toLowerCase().startsWith('/launch ')) {
+                    const slug = message.substring(8).trim();
+                    if (slug) {
+                        launchSite(slug);
+                        return;
+                    }
+                }
+
                 sendMessage(message);
             });
         }
@@ -1037,6 +1046,29 @@
                 }
             }
             return cookieValue;
+        }
+
+        // Launch website and show link in chat
+        function launchSite(slug) {
+            fetch('/launch/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ slug })
+            })
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.url) {
+                        appendMessage('bot', `Website launched: <a href="${data.url}" target="_blank">${data.url}</a>`);
+                    } else if (data.error) {
+                        appendMessage('bot', data.error);
+                    }
+                })
+                .catch(() => {
+                    appendMessage('bot', 'Failed to launch website.');
+                });
         }
 
         /* ---- TASK CARD LOGIC ---- */
