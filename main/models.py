@@ -37,6 +37,7 @@ class ChatMessage(models.Model):
 class Website(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='website')
     html_content = models.TextField(default="<h2>Welcome!</h2><p>Let's build your site!</p>")
+    slug = models.SlugField(unique=True, max_length=50, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
