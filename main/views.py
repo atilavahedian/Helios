@@ -57,6 +57,30 @@ def chat(request):
     chat_log = request.session.get("chat_log", [])
     chat_log.append({"role": "user", "content": user_message})
 
+    # Launch website if user requests it
+    lower_msg = user_message.lower()
+    if lower_msg.startswith("launch"):
+        slug_text = user_message[len("launch"):].strip()
+        slug_text = slug_text.replace("site", "").replace("website", "").replace("as", "").strip()
+        slug = slugify(slug_text) or slugify(request.user.username)
+        website, _ = Website.objects.get_or_create(user=request.user)
+        website.html_content = current_html
+        website.slug = slug
+        website.save()
+        site_url = request.build_absolute_uri(reverse("view_site", args=[slug]))
+        chat_log.append({"role": "assistant", "content": f"Website launched at {site_url}"})
+        request.session["chat_log"] = chat_log
+        request.session.modified = True
+        if not is_exempt:
+            remaining_prompts = settings.MAX_PROMPTS_PER_DAY - user_prompt.count
+        else:
+            remaining_prompts = "Unlimited"
+        return JsonResponse({
+            "reply": f"Website launched at {site_url}",
+            "website_html": current_html,
+            "remaining_prompts": remaining_prompts
+        })
+
 
     system_prompt = """
     You are Helios, an advanced website-building assistant focusing on modern, visually appealing web design. [do not use white font for a thing that has a white background!]
@@ -172,4 +196,10 @@ def chat_view(request):
     A dedicated chat view if desired.
     """
     return render(request, 'main/chat.html')
+
+
+def view_site(request, slug):
+    """Serve the saved website HTML for the given slug."""
+    website = get_object_or_404(Website, slug=slug)
+    return HttpResponse(website.html_content)
 
