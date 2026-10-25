@@ -1,6 +1,7 @@
 # main/views.py
 
 import json
+import os
 import openai
 import logging
 from django.shortcuts import render
@@ -16,7 +17,7 @@ from account.models import UserProfile
 logger = logging.getLogger(__name__)
 
 
-openai.api_key = "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"
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @require_POST
 @csrf_protect
@@ -202,4 +203,3 @@ def view_site(request, slug):
     """Serve the saved website HTML for the given slug."""
     website = get_object_or_404(Website, slug=slug)
     return HttpResponse(website.html_content)
-
